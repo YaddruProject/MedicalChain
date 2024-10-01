@@ -52,7 +52,7 @@ contract General is AccessControl {
     }
 
     function getDoctorInfo(address _doctorAddress) public view returns (UserStructs.Doctor memory) {
-        require(userRoles[_doctorAddress].role == Role.DOCTOR, "Not a doctor");
+        require(getRole(_doctorAddress) == Role.DOCTOR, "Doctor is not registered");
         return doctors[_doctorAddress];
     }
 

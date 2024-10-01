@@ -6,33 +6,33 @@ import "../storage/MedicalStorage.sol";
 
 contract AccessControl is MedicalStorage {
     modifier onlyAdmin() {
-        require(userRoles[msg.sender].role == Role.ADMIN, "Only admin can perform this action");
+        require(getRole(msg.sender) == Role.ADMIN, "Only admin can perform this action");
         _;
     }
 
     modifier onlyDoctor() {
-        require(userRoles[msg.sender].role == Role.DOCTOR, "Only doctor can perform this action");
+        require(getRole(msg.sender) == Role.DOCTOR, "Only doctor can perform this action");
         _;
     }
 
     modifier onlyPatient() {
-        require(userRoles[msg.sender].role == Role.PATIENT, "Only patient can perform this action");
+        require(getRole(msg.sender) == Role.PATIENT, "Only patient can perform this action");
         _;
     }
 
     modifier onlyDoctorAndAdmin(address _doctorAddress) {
-        require(userRoles[_doctorAddress].role == Role.DOCTOR, "Only doctor address should be provided");
-        require(userRoles[msg.sender].role == Role.ADMIN || userRoles[msg.sender].role == Role.DOCTOR, "Only doctor or admin can perform this action");
-        if (userRoles[_doctorAddress].role == Role.DOCTOR) {
+        require(getRole(_doctorAddress) == Role.DOCTOR, "Only doctor address should be provided");
+        require(getRole(msg.sender) == Role.ADMIN || getRole(msg.sender) == Role.DOCTOR, "Only doctor or admin can perform this action");
+        if (getRole(_doctorAddress) == Role.DOCTOR) {
             require(msg.sender == _doctorAddress, "Doctor can access only their own data");
         }
         _;
     }
 
     modifier onlyPatientAndDoctor(address _patientAddress) {
-        require(userRoles[_patientAddress].role == Role.PATIENT, "Only patient address should be provided");
-        require(userRoles[msg.sender].role == Role.DOCTOR || userRoles[msg.sender].role == Role.PATIENT, "Only patient or doctor with access can perform this action");
-        if (userRoles[msg.sender].role == Role.DOCTOR) {
+        require(getRole(_patientAddress) == Role.PATIENT, "Only patient address should be provided");
+        require(getRole(msg.sender) == Role.DOCTOR || getRole(msg.sender) == Role.PATIENT, "Only patient or doctor with access can perform this action");
+        if (getRole(msg.sender) == Role.DOCTOR) {
             require(hasPatientAccess(_patientAddress));
         }
         else {
@@ -41,12 +41,16 @@ contract AccessControl is MedicalStorage {
         _;
     }
 
+    function getRole(address user) public view returns (Role) {
+        return userRoles[user].role;
+    }
+
     function grantRole(address user, Role role) internal {
-        require(userRoles[user].role == Role.NONE, "User already has been granted a role");
+        require(getRole(user) == Role.NONE, "User already has been granted a role");
         if (role == Role.DOCTOR) {
-            require(userRoles[msg.sender].role == Role.ADMIN, "Only admin can grant doctor role");
+            require(getRole(msg.sender) == Role.ADMIN, "Only admin can grant doctor role");
         } else if (role == Role.PATIENT) {
-            require(userRoles[msg.sender].role == Role.DOCTOR, "Only doctor can grant patient role");
+            require(getRole(msg.sender) == Role.DOCTOR, "Only doctor can grant patient role");
         } else {
             revert("Invalid role");
         }
@@ -62,10 +66,10 @@ contract AccessControl is MedicalStorage {
         RoleDetails memory currentDetails = userRoles[user];
         require(currentDetails.role != Role.NONE, "User has no role to revoke");
         require(currentDetails.role != Role.ADMIN, "User cannot revoke admin role");
-        if (userRoles[msg.sender].role == Role.ADMIN) {
+        if (getRole(msg.sender) == Role.ADMIN) {
             emit RoleRevoked(user, currentDetails.role, msg.sender, block.timestamp);
             userRoles[user].role = Role.NONE;
-        } else if (userRoles[msg.sender].role == Role.DOCTOR) {
+        } else if (getRole(msg.sender) == Role.DOCTOR) {
             require(currentDetails.role == Role.PATIENT, "Only doctor can revoke patient role");
             emit RoleRevoked(user, currentDetails.role, msg.sender, block.timestamp);
             userRoles[user].role = Role.NONE;

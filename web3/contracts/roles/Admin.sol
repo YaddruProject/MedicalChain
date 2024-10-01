@@ -66,14 +66,14 @@ contract Admin is AccessControl {
     }
 
     function revokeDoctor(address _doctorAddress) public onlyAdmin {
-        require(userRoles[_doctorAddress].role == Role.DOCTOR, "Not a registered doctor");
+        require(getRole(_doctorAddress) == Role.DOCTOR, "Not a registered doctor");
         grantRole(_doctorAddress, Role.NONE);
         delete doctors[_doctorAddress];
         emit DoctorRevoked(_doctorAddress);
     }
 
     function revokePatient(address _patientAddress) public onlyAdmin {
-        require(userRoles[_patientAddress].role == Role.PATIENT, "Not a registered patient");
+        require(getRole(_patientAddress) == Role.PATIENT, "Not a registered patient");
         grantRole(_patientAddress, Role.NONE);
         delete doctors[_patientAddress];
         emit PatientRevoked(_patientAddress);
