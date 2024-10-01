@@ -1,0 +1,885 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_addr",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_phoneNumber",
+						"type": "string"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "patientAddress",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "AccessGranted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "patientAddress",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "AccessRevoked",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "doctorAddress",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					}
+				],
+				"name": "DoctorRegistered",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "DoctorRevoked",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "patientAddress",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "cid",
+						"type": "string"
+					}
+				],
+				"name": "NewRecordAdded",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "patientAddress",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					}
+				],
+				"name": "PatientRegistered",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "patientAddress",
+						"type": "address"
+					}
+				],
+				"name": "PatientRevoked",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum MedicalStorage.Role",
+						"name": "role",
+						"type": "uint8"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "grantedBy",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "assignedAt",
+						"type": "uint256"
+					}
+				],
+				"name": "RoleGranted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum MedicalStorage.Role",
+						"name": "role",
+						"type": "uint8"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "revokedBy",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "revokedAt",
+						"type": "uint256"
+					}
+				],
+				"name": "RoleRevoked",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_patientAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "_fileName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_fileDescription",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_fileFormat",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_fileSize",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_cid",
+						"type": "string"
+					}
+				],
+				"name": "addMedicalRecord",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getAdminInfo",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "addr",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "phoneNumber",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "profilePic",
+								"type": "string"
+							}
+						],
+						"internalType": "struct UserStructs.Admin",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getAllDoctors",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "addr",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "uint8",
+								"name": "age",
+								"type": "uint8"
+							},
+							{
+								"internalType": "string",
+								"name": "gender",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "contactNumber",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "currentWorkingHospital",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "specialization",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "profilePic",
+								"type": "string"
+							}
+						],
+						"internalType": "struct UserStructs.Doctor[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "getDoctorInfo",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "addr",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "uint8",
+								"name": "age",
+								"type": "uint8"
+							},
+							{
+								"internalType": "string",
+								"name": "gender",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "contactNumber",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "currentWorkingHospital",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "specialization",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "profilePic",
+								"type": "string"
+							}
+						],
+						"internalType": "struct UserStructs.Doctor",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_patientAddress",
+						"type": "address"
+					}
+				],
+				"name": "getMedicalRecords",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "string",
+								"name": "filename",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "description",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "fileFormat",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "fileSize",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "createdAt",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "createdBy",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "cid",
+								"type": "string"
+							}
+						],
+						"internalType": "struct FileStructs.FileData[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_patientAddress",
+						"type": "address"
+					}
+				],
+				"name": "getPatientInfo",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "addr",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "uint8",
+								"name": "age",
+								"type": "uint8"
+							},
+							{
+								"internalType": "string",
+								"name": "gender",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "contactNumber",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "healthIssues",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "bloodGroup",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "aadharNumber",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "profilePic",
+								"type": "string"
+							}
+						],
+						"internalType": "struct UserStructs.Patient",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "grantAccessToDoctor",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "listPatientsWithAccess",
+				"outputs": [
+					{
+						"internalType": "string[]",
+						"name": "",
+						"type": "string[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_doctorAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_age",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "_gender",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_contactNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_currentWorkingHospital",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_specialization",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_profilePic",
+						"type": "string"
+					}
+				],
+				"name": "registerDoctor",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_patientAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_age",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "_gender",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_contactNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_healthIssues",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_bloodGroup",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_aadharNumber",
+						"type": "string"
+					}
+				],
+				"name": "registerPatient",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "revokeAccessFromDoctor",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_doctorAddress",
+						"type": "address"
+					}
+				],
+				"name": "revokeDoctor",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_patientAddress",
+						"type": "address"
+					}
+				],
+				"name": "revokePatient",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_phoneNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_profilePic",
+						"type": "string"
+					}
+				],
+				"name": "updateAdminInfo",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_doctorAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_age",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "_contactNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_currentWorkingHospital",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_specialization",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_profilePic",
+						"type": "string"
+					}
+				],
+				"name": "updateDoctorInfo",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_patientAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "uint8",
+						"name": "age",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "contactNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "healthIssues",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "bloodGroup",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "profilePic",
+						"type": "string"
+					}
+				],
+				"name": "updatePatientInfo",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/MedicalChain.sol": "MedicalChain"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/MedicalChain.sol": {
+			"keccak256": "0xa57f5404448c7f16880496015d8cae9bb4352cb115542775cdcd6be2ef35bcdc",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://32a7562a2898ba3ccc7a2a8a871533fede535b662a84fdfb4e68eb68072c9cab",
+				"dweb:/ipfs/QmUi7ww9RaT1jJdKRnc3w8FNh9UvTKPLvYeegfUKEkaqN1"
+			]
+		},
+		"contracts/access/AccessControl.sol": {
+			"keccak256": "0x4ca8778f4d7e57f05af7a506a20be9d16eb20de950e240510917218545ef17a5",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://686f9fcb665cbb87144a31386d259eff036f83e07a65ec2afefa3acb217710f9",
+				"dweb:/ipfs/QmSJEV8cGrhJGV9kkDpcbA6qyW2b215sninuDRrD9wuUq6"
+			]
+		},
+		"contracts/roles/Admin.sol": {
+			"keccak256": "0xdc860ca2ada90dc963cd22ea4f8e60f7c04a131d435b4304a209a06d89b3e5b3",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c875a9b1eba2a71b0369ac93ebd9c957127d73ec47a8b0f1aa764be467aaf4d9",
+				"dweb:/ipfs/QmNcFAD5sjLUu6dGVeGQPge7R6hL2C3k3oMonUhgw4pZf3"
+			]
+		},
+		"contracts/roles/Doctor.sol": {
+			"keccak256": "0x297bb6c23b2ba312de90073c962b1811d1a77bd60e2be854c9fd40487bad973f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8d68762701a45a702ed066ce525fcda804c589ada8561dca83b039a0b56c110b",
+				"dweb:/ipfs/QmVYszYXERAevS5wMpKtkr8GRhWxzj1ty1m1Nrj9WoHgTE"
+			]
+		},
+		"contracts/roles/General.sol": {
+			"keccak256": "0xb9c06323c8bd99c032e3e4fb8b11d16851f9628892fee0fbe4201e6f2cf39129",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://96f012a3d7bc892d4439549285e88691483dc4450a6c937c7547e008f982b551",
+				"dweb:/ipfs/QmSSCg7swa9i4ci4bW2xXKVHNmx8SfhRFM4cLya9L3XnaW"
+			]
+		},
+		"contracts/roles/Patient.sol": {
+			"keccak256": "0xb6ae2a1c29845b70366f7d7e4558c0df4f223057648478ba97b4d5298153fe4b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a53460585fa92ac7c5dbc2cb4c5ca735623c159f1440ec9a9bb3d97e0576e935",
+				"dweb:/ipfs/QmVYdcdLB5TovTooAG6cSVhqezZiRXJa37nbed1GfEP5np"
+			]
+		},
+		"contracts/storage/MedicalStorage.sol": {
+			"keccak256": "0xc15e9325bff991df55a891d8d8022da1531a9a75a2cb32d9d168028b5ad82877",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://678a274fd29b9b7a099a1c9dfe10af16c4ad6bb91e941df38aa4427fc7c3600d",
+				"dweb:/ipfs/Qmapr17MKELzQNW3v2vx5T5D97Vwx83qQu8eEg765ehmcM"
+			]
+		},
+		"contracts/structs/FileStructs.sol": {
+			"keccak256": "0xb5d17c3b31f3e5fdeade93fc3fd92b38a1a0ad9f2cfcdd06acf051c45dd83100",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://174acd43c604fbdf818bc1fda14e1ea44b077c287139c1819460868b7b97eb46",
+				"dweb:/ipfs/QmYYSq2MRR8S4tHWqswwy53NwuVqvh49VC9H39bM3rfp2B"
+			]
+		},
+		"contracts/structs/UserStructs.sol": {
+			"keccak256": "0x0af9f1cab3f4eb0d282f59c9ad6314d6fc33277c611424b64dac76d415229970",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://7ccde7e6a7f5fc5c92f00931e6923e782f8049384e25c7763915449fb41f2d58",
+				"dweb:/ipfs/QmX1cAzjho5MqKW8AjqUpMXKRoU1eZ3tRS3s43y1PM2jo2"
+			]
+		}
+	},
+	"version": 1
+}
