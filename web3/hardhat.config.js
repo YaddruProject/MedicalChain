@@ -10,5 +10,10 @@ module.exports = {
         runs: 200
       }
     }
+  },
+  networks: {
+    buildbear: {
+      url: "https://rpc.buildbear.io/aggressive-hulk-0968b782"
+    }
   }
 };
