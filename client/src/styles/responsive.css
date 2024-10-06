@@ -20,4 +20,8 @@
     .layout-dashboard .ant-layout-header {
         padding: 0 10px;
     }
+    
+    .hero {
+        padding: 70px 20px;
+    }
 }

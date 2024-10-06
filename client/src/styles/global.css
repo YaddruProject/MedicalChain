@@ -57,3 +57,21 @@
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
     border-right: 0.05rem solid #e8e8e8;
 }
+
+.hero {
+    background: #f0f2f5;
+    padding: 100px 20px;
+    text-align: center;
+    margin: 20px;
+}
+  
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.content-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+}
