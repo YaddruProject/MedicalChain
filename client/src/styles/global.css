@@ -3,3 +3,57 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 0 30px;
+    height: 80px;
+    line-height: 80px;
+}
+
+.sider-top {
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 10px;
+}
+
+.sidebar-toggler {
+    display: none;
+}
+
+.footer {
+    text-align: center;
+    padding: 0 50px 24px;
+}
+
+.layout-dashboard {
+    min-height: 100vh;
+    margin-left: 270px;
+}
+
+.menu-heading {
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 15px;
+}
+  
+.ant-menu-title-content {
+    font-size: 15px;
+}
+
+.drawer .ant-drawer-body {
+    padding: 5px 0;
+}
+
+.sider {
+    z-index: 2;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    border-right: 0.05rem solid #e8e8e8;
+}

@@ -1,0 +1,23 @@
+@media (max-width: 992px) {
+    .header {
+      padding: 0 10px;
+      height: 70px;
+      line-height: 70px;
+    }
+
+    .sider-top {
+        padding: 10px;
+    }
+
+    .sidebar-toggler {
+        display: block;
+    }
+
+    .layout-dashboard {
+        margin-left: 0;
+    }
+
+    .layout-dashboard .ant-layout-header {
+        padding: 0 10px;
+    }
+}
