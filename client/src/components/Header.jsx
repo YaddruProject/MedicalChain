@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Layout, Button, Breadcrumb, Grid, Row, Col, Typography } from 'antd';
 import { MenuOutlined, LogoutOutlined, WalletOutlined } from '@ant-design/icons';
 
@@ -17,6 +17,7 @@ const Header = ({ onMenuClick = () => {} }) => {
   const { connectWallet, disconnectWallet } = useWallet();
   const screens = useBreakpoint();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const pathnames = location.pathname.split('/').filter(x => x);
 
@@ -24,6 +25,16 @@ const Header = ({ onMenuClick = () => {} }) => {
     path: `/${pathnames.slice(0, index + 1).join('/')}`,
     title: name.charAt(0).toUpperCase() + name.slice(1),
   }));
+
+  const handleConnectWallet = async () => {
+    await connectWallet();
+    navigate('/dashboard');
+  }
+
+  const handleDisconnectWallet = async () => {
+    await disconnectWallet();
+    navigate('/');
+  }
 
   const itemRender = (currentRoute, _, routes, paths) => {
     currentRoute.title = currentRoute.title
@@ -61,7 +72,7 @@ const Header = ({ onMenuClick = () => {} }) => {
                   type='primary'
                   icon={<WalletOutlined />}
                   size={screens.xs ? 'middle' : 'large'}
-                  onClick={connectWallet}
+                  onClick={handleConnectWallet}
                 >
                   Connect Wallet
                 </Button>
@@ -96,7 +107,7 @@ const Header = ({ onMenuClick = () => {} }) => {
                   type='primary'
                   icon={<LogoutOutlined />}
                   size={screens.xs ? 'middle' : 'large'}
-                  onClick={disconnectWallet}
+                  onClick={handleDisconnectWallet}
                 >
                   Logout
                 </Button>
