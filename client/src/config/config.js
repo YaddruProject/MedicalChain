@@ -3,6 +3,8 @@ import { z } from 'zod';
 const configSchema = z.object({
     VITE_CONTRACT_ADDRESS: z.string(),
     VITE_CONTRACT_ABI: z.string(),
+    VITE_PINATA_JWT: z.string(),
+    VITE_PINATA_GATEWAY: z.string(),
 });
 
 class Config {
@@ -15,6 +17,8 @@ class Config {
         this.loadABI(config.data.VITE_CONTRACT_ABI).then((abi) => {
             this.CONTRACT_ABI = abi.abi;
         });
+        this.PINATA_JWT = config.data.VITE_PINATA_JWT;
+        this.PINATA_GATEWAY = config.data.VITE_PINATA_GATEWAY;
     }
     
     async loadABI(path) {
