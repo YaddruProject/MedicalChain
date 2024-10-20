@@ -3,10 +3,10 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Layout, Button, Breadcrumb, Grid, Row, Col, Typography } from 'antd';
 import { MenuOutlined, LogoutOutlined, WalletOutlined } from '@ant-design/icons';
 
-import useIsLoggedIn from '../hooks/useIsLoggedIn';
-import useWallet from '../hooks/useWallet';
+import useIsLoggedIn from '@hooks/useIsLoggedIn';
+import useWallet from '@hooks/useWallet';
 
-import Logo from '../assets/logo-nobg.png';
+import Logo from '@assets/logo-nobg.png';
 
 const { Title } = Typography;
 const { Header: AntdHeader } = Layout;

@@ -2,7 +2,7 @@ import { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { ethers } from 'ethers';
 
-import Config from '../config/config';
+import Config from '@config/config';
 
 export const ContractContext = createContext();
 

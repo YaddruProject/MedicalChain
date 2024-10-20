@@ -6,7 +6,7 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidenav from './Sidenav';
 
-import Logo from '../assets/logo-nobg.png';
+import Logo from '@assets/logo-nobg.png';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;

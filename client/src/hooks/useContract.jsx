@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ContractContext } from "../context/ContractContext";
+import { ContractContext } from "@context/ContractContext";
 
 const useContract = () => {
     const { contract } = useContext(ContractContext);

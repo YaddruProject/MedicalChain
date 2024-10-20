@@ -11,7 +11,7 @@ import {
   FileSearchOutlined,
 } from '@ant-design/icons';
 
-import useUser from '../hooks/useUser';
+import useUser from '@hooks/useUser';
 
 const Sidenav = () => {
   const user = useUser();

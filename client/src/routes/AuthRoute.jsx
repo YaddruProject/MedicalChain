@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
-import useIsLoggedIn from '../hooks/useIsLoggedIn';
-import useUser from '../hooks/useUser';
+import useIsLoggedIn from '@hooks/useIsLoggedIn';
+import useUser from '@hooks/useUser';
 
-import MainLayout from '../components/MainLayout';
+import MainLayout from '@components/MainLayout';
 
-import AdminRoutes from '../routes/AdminRoutes';
-import DoctorRoutes from '../routes/DoctorRoutes';
-import PatientRoutes from '../routes/PatientRoutes';
+import AdminRoutes from '@routes/AdminRoutes';
+import DoctorRoutes from '@routes/DoctorRoutes';
+import PatientRoutes from '@routes/PatientRoutes';
 
 function AuthRoute() {
     const isLoggedIn = useIsLoggedIn();

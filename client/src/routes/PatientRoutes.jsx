@@ -1,8 +1,8 @@
 import { Route, Routes } from 'react-router-dom';
 
-import PatientProfile from '../pages/Patient/Profile';
-import PatientRecords from '../pages/Patient/Records';
-import Doctors from '../pages/Patient/Doctors';
+import PatientProfile from '@pages/Patient/Profile';
+import PatientRecords from '@pages/Patient/Records';
+import Doctors from '@pages/Patient/Doctors';
 
 const PatientRoutes = () => {
   return (

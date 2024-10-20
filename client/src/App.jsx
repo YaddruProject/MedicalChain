@@ -1,7 +1,7 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 
-import HomePage from './pages/Home/HomePage';
-import AuthRoute from './routes/AuthRoute';
+import HomePage from '@pages/Home/HomePage';
+import AuthRoute from '@routes/AuthRoute';
 
 function App() {
   return (
