@@ -7,6 +7,10 @@ import "../structs/FileStructs.sol";
 import "../access/AccessControl.sol";
 
 contract General is AccessControl {
+    function getPatientsCount() public view returns (uint) {
+        return patientsList.length;
+    }
+
     function getPatientInfo(address _patientAddress) public view onlyPatientAndDoctor(_patientAddress) returns (UserStructs.Patient memory) {
         return patients[_patientAddress];
     }
@@ -51,6 +55,10 @@ contract General is AccessControl {
         });
         patientRecords[_patientAddress].push(newRecord);
         emit NewRecordAdded(_patientAddress, _cid);
+    }
+
+    function getDoctorsCount() public view returns (uint) {
+        return doctorsList.length;
     }
 
     function getDoctorInfo(address _doctorAddress) public view returns (UserStructs.Doctor memory) {
