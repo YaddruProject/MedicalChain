@@ -8,6 +8,7 @@ library UserStructs {
     struct Admin {
         address addr;
         string name;
+        string email;
         string phoneNumber;
         string profilePic;
     }
@@ -17,6 +18,7 @@ library UserStructs {
         string name;
         uint8 age;
         string gender;
+        string email;
         string contactNumber;
         string currentWorkingHospital;
         string specialization;
@@ -28,6 +30,7 @@ library UserStructs {
         string name;
         uint8 age;
         string gender;
+        string email;
         string contactNumber;
         string healthIssues;
         string bloodGroup;

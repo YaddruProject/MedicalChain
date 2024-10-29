@@ -10,11 +10,13 @@ contract Admin is AccessControl {
     constructor(
         address _addr,
         string memory _name,
+        string memory _email,
         string memory _phoneNumber
     ) {
         admin = UserStructs.Admin(
             _addr,
             _name,
+            _email,
             _phoneNumber,
             ""
         );
@@ -31,10 +33,12 @@ contract Admin is AccessControl {
 
     function updateAdminInfo(
         string memory _name,
+        string memory _email,
         string memory _phoneNumber,
         string memory _profilePic
     ) public onlyAdmin {
         admin.name = _name;
+        admin.email = _email;
         admin.phoneNumber = _phoneNumber;
         admin.profilePic = _profilePic;
     }
@@ -44,6 +48,7 @@ contract Admin is AccessControl {
         string memory _name,
         uint8 _age,
         string memory _gender,
+        string memory _email,
         string memory _contactNumber,
         string memory _currentWorkingHospital,
         string memory _specialization,
@@ -56,6 +61,7 @@ contract Admin is AccessControl {
             name: _name,
             age: _age,
             gender: _gender,
+            email: _email,
             contactNumber: _contactNumber,
             currentWorkingHospital: _currentWorkingHospital,
             specialization: _specialization,

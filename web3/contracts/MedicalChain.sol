@@ -8,5 +8,10 @@ import "contracts/roles/Patient.sol";
 import "contracts/roles/General.sol";
 
 contract MedicalChain is Admin, Doctor, Patient, General {
-    constructor(address _addr, string memory _name, string memory _phoneNumber) Admin(_addr, _name, _phoneNumber) {}
+    constructor(
+        address _addr,
+        string memory _name,
+        string memory _email,
+        string memory _phoneNumber
+    ) Admin(_addr, _name, _email, _phoneNumber) {}
 }

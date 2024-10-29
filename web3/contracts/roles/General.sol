@@ -13,17 +13,19 @@ contract General is AccessControl {
 
     function updatePatientInfo(
         address _patientAddress,
-        uint8 age,
-        string memory contactNumber,
-        string memory healthIssues,
-        string memory bloodGroup,
-        string memory profilePic
+        uint8 _age,
+        string memory _email,
+        string memory _contactNumber,
+        string memory _healthIssues,
+        string memory _bloodGroup,
+        string memory _profilePic
     ) public onlyPatientAndDoctor(_patientAddress) {
-        patients[_patientAddress].age = age;
-        patients[_patientAddress].contactNumber = contactNumber;
-        patients[_patientAddress].healthIssues = healthIssues;
-        patients[_patientAddress].bloodGroup = bloodGroup;
-        patients[_patientAddress].profilePic = profilePic;
+        patients[_patientAddress].age = _age;
+        patients[_patientAddress].email = _email;
+        patients[_patientAddress].contactNumber = _contactNumber;
+        patients[_patientAddress].healthIssues = _healthIssues;
+        patients[_patientAddress].bloodGroup = _bloodGroup;
+        patients[_patientAddress].profilePic = _profilePic;
     }
 
     function getMedicalRecords(address _patientAddress) public view onlyPatientAndDoctor(_patientAddress) returns (FileStructs.FileData[] memory) {
@@ -59,12 +61,14 @@ contract General is AccessControl {
     function updateDoctorInfo(
         address _doctorAddress,
         uint8 _age,
+        string memory _email,
         string memory _contactNumber,
         string memory _currentWorkingHospital,
         string memory _specialization,
         string memory _profilePic
     ) public onlyDoctorAndAdmin(_doctorAddress) {
         doctors[_doctorAddress].age = _age;
+        doctors[_doctorAddress].email = _email;
         doctors[_doctorAddress].contactNumber = _contactNumber;
         doctors[_doctorAddress].currentWorkingHospital = _currentWorkingHospital;
         doctors[_doctorAddress].specialization = _specialization;
