@@ -33,17 +33,17 @@ contract Doctor is AccessControl {
         emit PatientRegistered(_patientAddress, _name);
     }
 
-    function listPatientsWithAccess() public view onlyDoctor returns (string[] memory) {
-        string[] memory accessiblePatientNames = new string[](patientsList.length);
+    function listPatientsWithAccess() public view onlyDoctor returns (address[] memory) {
+        address[] memory accessiblePatients = new address[](patientsList.length);
         uint count = 0;
         for (uint i = 0; i < patientsList.length; i++) {
             if (userRoles[patientsList[i]].role == Role.PATIENT && hasPatientAccess(patientsList[i])) {
-                accessiblePatientNames[count++] = patients[patientsList[i]].name;
+                accessiblePatients[count++] = patients[patientsList[i]].addr;
             }
         }
-        string[] memory result = new string[](count);
+        address[] memory result = new address[](count);
         for (uint j = 0; j < count; j++) {
-            result[j] = accessiblePatientNames[j];
+            result[j] = accessiblePatients[j];
         }
         return result;
     }
