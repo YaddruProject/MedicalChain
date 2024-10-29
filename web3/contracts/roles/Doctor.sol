@@ -15,7 +15,8 @@ contract Doctor is AccessControl {
         string memory _contactNumber,
         string memory _healthIssues,
         string memory _bloodGroup,
-        string memory _aadharNumber
+        string memory _aadharNumber,
+        string memory _profilePic
     ) public onlyDoctor {
         grantRole(_patientAddress, Role.PATIENT);
         patientsList.push(_patientAddress);
@@ -28,7 +29,7 @@ contract Doctor is AccessControl {
             healthIssues: _healthIssues,
             bloodGroup: _bloodGroup,
             aadharNumber: _aadharNumber,
-            profilePic: ""
+            profilePic: _profilePic
         });
         emit PatientRegistered(_patientAddress, _name);
     }
