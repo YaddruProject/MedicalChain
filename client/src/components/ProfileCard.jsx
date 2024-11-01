@@ -4,7 +4,7 @@ import { EditOutlined } from '@ant-design/icons'
 
 const { useBreakpoint } = Grid;
 
-const ProfileCard = ({ title, items, avatarUrl, onEdit }) => {
+const ProfileCard = ({ title, items, avatarUrl, onEdit = null }) => {
     const screens = useBreakpoint();
 
     return (
@@ -24,14 +24,16 @@ const ProfileCard = ({ title, items, avatarUrl, onEdit }) => {
                 column={1}
                 style={{ margin: '0 auto', textAlign: 'center', maxWidth: '800px' }}
             />
-            <Button
-                type='primary'
-                icon={<EditOutlined />}
-                style={{ width: '100px', marginTop: 20 }}
-                onClick={onEdit}
-            >
-            Edit
-            </Button>
+            {onEdit && (
+                <Button
+                    type='primary'
+                    icon={<EditOutlined />}
+                    onClick={onEdit}
+                    style={{ marginTop: 20 }}
+                >
+                    Edit
+                </Button>
+            )}
         </Card>
     )
 }
@@ -40,7 +42,7 @@ ProfileCard.propTypes = {
     title: PropTypes.string.isRequired,
     items: PropTypes.array.isRequired,
     avatarUrl: PropTypes.string.isRequired,
-    onEdit: PropTypes.func.isRequired,
+    onEdit: PropTypes.func,
 }
 
 export default ProfileCard;
