@@ -7,10 +7,10 @@ import Patients from '@pages/Doctor/Patients';
 const DoctorRoutes = () => {
   return (
     <Routes>
-      <Route path="" element={<Profile />} />
-      <Route path="profile" element={<Profile />} />
-      <Route path="register-patient" element={<RegisterPatient />} />
-      <Route path="patients" element={<Patients />} />
+      <Route path='' element={<Profile />} />
+      <Route path='profile' element={<Profile />} />
+      <Route path='register-patient' element={<RegisterPatient />} />
+      <Route path='patients' element={<Patients />} />
     </Routes>
   );
 };
