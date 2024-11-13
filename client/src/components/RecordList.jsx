@@ -170,7 +170,7 @@ const RecordList = ({ patientAddress }) => {
                       avatar={getRecordIcon(record.type)}
                       title={
                         <span style={{ fontSize: screens.xs ? '14px' : '15px', fontWeight: 'bold' }}>
-                          record.title
+                          {record.title}
                         </span>
                       }
                       description={
