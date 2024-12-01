@@ -37,14 +37,14 @@ const Users = () => {
         {state.isLoading ? (
           <Spin size='large' fullscreen={true} />
         ) : (
-          <Row gutter={16}>
-            <Col span={12}>
-              <Card title="Total Doctors" bordered={false}>
+          <Row gutter={[16, 24]}>
+            <Col xs={24} sm={12}>
+              <Card title="Total Doctors" bordered>
                 <Title level={3}>{state.doctorsCount}</Title>
               </Card>
             </Col>
-            <Col span={12}>
-              <Card title="Total Patients" bordered={false}>
+            <Col xs={24} sm={12}>
+              <Card title="Total Patients" bordered>
                 <Title level={3}>{state.patientsCount}</Title>
               </Card>
             </Col>
