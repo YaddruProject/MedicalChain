@@ -1,0 +1,5 @@
+fastapi
+noobstuffs
+python-dotenv
+uvicorn
+web3
