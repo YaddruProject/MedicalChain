@@ -1,6 +1,7 @@
-from typing import Tuple
+from typing import List, Tuple
 
 from dotenv import load_dotenv
+from MedicalChain.models import Analytics
 from NoobStuffs.libenvconfig import getConfig
 from web3.contract import Contract
 
@@ -14,6 +15,9 @@ class Config:
     NETWORK_PROVIDER: str = getConfig("NETWORK_PROVIDER", True)
     CONTRACT_ABI: str = getConfig("CONTRACT_ABI", True)
     CONTRACT_ADDRESS: str = getConfig("CONTRACT_ADDRESS", True)
+
+    THROUGHPUT: List[Analytics] = []
+    LATENCY: List[Analytics] = []
 
     @classmethod
     def setupWeb3(cls) -> Tuple[Web3, Contract]:

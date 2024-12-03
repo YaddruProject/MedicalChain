@@ -1,5 +1,7 @@
+apscheduler
 fastapi
 noobstuffs
+pydantic
 python-dotenv
 uvicorn
 web3
