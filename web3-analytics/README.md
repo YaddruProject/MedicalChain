@@ -1,0 +1,1 @@
+# MedicalChain Analytics Smart Contract
