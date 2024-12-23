@@ -84,7 +84,13 @@ const Logs = () => {
       key: "args",
       render: (args) =>
         args ? (
-          <pre>{JSON.stringify(args, null, 2)}</pre>
+          <pre>
+            {JSON.stringify(
+              args,
+              (_, value) => (typeof value === "bigint" ? value.toString() : value),
+              2
+            )}
+          </pre>
         ) : (
           "No additional data"
         ),
