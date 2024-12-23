@@ -69,7 +69,7 @@ const Logs = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          {text.substring(0, 10)}...
+          {text.substring(0, 20)}...
         </a>
       ),
     },
@@ -103,6 +103,7 @@ const Logs = () => {
               columns={columns}
               bordered
               pagination={false}
+              scroll={{ y: '100vh' }}
             />
           </Card>
         )}
