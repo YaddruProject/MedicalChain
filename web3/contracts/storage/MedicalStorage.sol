@@ -26,6 +26,12 @@ contract MedicalStorage {
     mapping(address => FileStructs.FileData[]) internal patientRecords;
     mapping(address => mapping(address => bool)) internal doctorAccessToPatient;
 
+    mapping(address => string) internal patientSecretKeys;
+    mapping(address => mapping(address => string)) internal doctorEncryptedPatientKeys;
+
+    mapping(address => string) internal publicKeys;
+    mapping(address => string) internal privateKeys;
+
     event RoleGranted(address indexed user, Role role, address indexed grantedBy, uint256 assignedAt);
     event RoleRevoked(address indexed user, Role role, address indexed revokedBy, uint256 revokedAt);
 
@@ -36,6 +42,7 @@ contract MedicalStorage {
     event PatientRevoked(address indexed patientAddress);
 
     event NewRecordAdded(address indexed patientAddress, string cid);
+    event RecordsUpdated(address indexed patientAddress);
     event AccessGranted(address indexed patientAddress, address indexed doctorAddress);
     event AccessRevoked(address indexed patientAddress, address indexed doctorAddress);
 }

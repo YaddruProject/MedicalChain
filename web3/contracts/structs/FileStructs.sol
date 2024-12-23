@@ -7,9 +7,13 @@ library FileStructs {
         string filename;
         string description;
         string fileFormat;
-        string fileSize;
+        uint256 fileSize;
+        string sha256;
         uint256 createdAt;
         address createdBy;
+        uint256 updatedAt;
+        address lastUpdatedBy;
         string cid;
+        string sig;
     }
 }

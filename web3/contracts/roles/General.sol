@@ -7,6 +7,21 @@ import "../structs/FileStructs.sol";
 import "../access/AccessControl.sol";
 
 contract General is AccessControl {
+    function setRSAKeyPair(string memory _publicKey, string memory _privateKey) public {
+        require(bytes(_publicKey).length > 0, "Public key is required");
+        require(bytes(_privateKey).length > 0, "Private key is required");
+        publicKeys[msg.sender] = _publicKey;
+        privateKeys[msg.sender] = _privateKey;
+    }
+
+    function getPublicKey(address _userAddress) public view returns (string memory) {
+        return publicKeys[_userAddress];
+    }
+
+    function getPrivateKey() public view returns (string memory) {
+        return privateKeys[msg.sender];
+    }
+
     function getPatientsCount() public view returns (uint) {
         return patientsList.length;
     }
@@ -41,17 +56,23 @@ contract General is AccessControl {
         string memory _fileName,
         string memory _fileDescription,
         string memory _fileFormat,
-        string memory _fileSize,
-        string memory _cid
+        uint256 _fileSize,
+        string memory _sha256,
+        string memory _cid,
+        string memory _sig
     ) public onlyPatientAndDoctor(_patientAddress) {
         FileStructs.FileData memory newRecord = FileStructs.FileData({
             filename: _fileName,
             description: _fileDescription,
             fileFormat: _fileFormat,
             fileSize: _fileSize,
+            sha256: _sha256,
             createdAt: block.timestamp,
             createdBy: msg.sender,
-            cid: _cid
+            updatedAt: block.timestamp,
+            lastUpdatedBy: msg.sender,
+            cid: _cid,
+            sig: _sig
         });
         patientRecords[_patientAddress].push(newRecord);
         emit NewRecordAdded(_patientAddress, _cid);

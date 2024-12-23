@@ -7,6 +7,11 @@ import "../structs/FileStructs.sol";
 import "../access/AccessControl.sol";
 
 contract Doctor is AccessControl {
+    function getEncryptedSecretKey(address _patientAddress) public view onlyDoctor returns (string memory) {
+        require(hasPatientAccess(_patientAddress), "Doctor does not have access");
+        return doctorEncryptedPatientKeys[msg.sender][_patientAddress];
+    }
+
     function registerPatient(
         address _patientAddress,
         string memory _name,
@@ -49,5 +54,10 @@ contract Doctor is AccessControl {
             result[j] = accessiblePatients[j];
         }
         return result;
+    }
+
+    function getPatientEncryptedKey(address _patientAddress) public view onlyDoctor returns (string memory) {
+        require(hasPatientAccess(_patientAddress), "Doctor does not have access");
+        return doctorEncryptedPatientKeys[msg.sender][_patientAddress];
     }
 }
