@@ -1,10 +1,11 @@
 import { useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Input, Button, Col, Card, List, Typography, Avatar, Grid, Spin, Modal, message, Row } from 'antd';
+import { Col, Spin, message } from 'antd';
 
 import ContentLayout from '@components/ContentLayout';
 import ProfileCard from '@components/ProfileCard';
 import RecordList from '@components/RecordList';
+import KeyModal from '@components/KeyModal';
 import useContract from '@hooks/useContract';
 import useCustomState from '@hooks/useCustomState';
 import { pinata } from '@services/pinata';
@@ -22,6 +23,7 @@ const PatientInfo = () => {
         updateState({ isLoading: true });
         try {
             const data = await contract.getPatientInfo(patientAddress);
+            const patientPublicKey = await contract.getPublicKey(patientAddress);
             const patientData = {
                 address: data[0],
                 name: data[1],
@@ -33,6 +35,7 @@ const PatientInfo = () => {
                 bloodGroup: data[7],
                 aadhaarNumber: data[8],
                 avatarUrl: pinata.getIPFSUrl(data[9]),
+                publicKey: patientPublicKey,
             };
             updateState({
                 patientInfo: patientData,
@@ -46,6 +49,15 @@ const PatientInfo = () => {
                     { key: 7, label: 'Health Issues', children: patientData.healthIssues },
                     { key: 8, label: 'Blood Group', children: patientData.bloodGroup },
                     { key: 9, label: 'Aadhaar Number', children: patientData.aadhaarNumber },
+                    {
+                        key: 10,
+                        label: 'Public Key',
+                        children: (
+                            <KeyModal
+                                publicKey={patientData.publicKey}
+                            />
+                        )
+                    }
                 ],
                 isLoading: false,
             });
@@ -82,4 +94,4 @@ const PatientInfo = () => {
     );
 }
 
-export default PatientInfo
+export default PatientInfo;

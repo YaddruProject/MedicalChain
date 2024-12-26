@@ -4,6 +4,7 @@ import { Col, Button, Form, Input, Modal, message, Spin } from 'antd';
 import ContentLayout from '@components/ContentLayout';
 import AvatarUpload from '@components/AvatarUpload';
 import ProfileCard from '@components/ProfileCard';
+import KeyModal from '@components/KeyModal';
 import useContract from '@hooks/useContract';
 import useUser from '@hooks/useUser';
 import useCustomState from '@hooks/useCustomState';
@@ -26,6 +27,8 @@ const Profile = () => {
     updateState({ isLoading: true });
     try {
       const data = await contract.getPatientInfo(user.address);
+      const patientPublicKey = await contract.getPublicKey(user.address);
+      const patientPrivateKey = await contract.getPrivateKey();
       const patientData = {
         address: data[0],
         name: data[1],
@@ -37,6 +40,8 @@ const Profile = () => {
         bloodGroup: data[7],
         aadhaarNumber: data[8],
         hash: data[9],
+        publicKey: patientPublicKey,
+        privateKey: patientPrivateKey,
       };
       const avatarUrl = patientData.hash ? await pinata.getIPFSUrl(patientData.hash) : 'https://example.com/default-avatar.png';
       patientData.avatarUrl = avatarUrl;
@@ -52,6 +57,16 @@ const Profile = () => {
           { key: 7, label: 'Health Issues', children: patientData.healthIssues },
           { key: 8, label: 'Blood Group', children: patientData.bloodGroup },
           { key: 9, label: 'Aadhaar Number', children: patientData.aadhaarNumber },
+          {
+            key: 10,
+            label: 'Public amd Private Keys',
+            children: (
+              <KeyModal
+                publicKey={patientData.publicKey}
+                privateKey={patientData.privateKey}
+              />
+            )
+          }
         ],
         isLoading: false,
       });

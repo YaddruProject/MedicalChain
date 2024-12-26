@@ -3,18 +3,21 @@ import PropTypes from 'prop-types';
 import { List, Button, Col, Row, Card, Grid, Typography, Modal, Spin, Input, message } from 'antd';
 import { FilePdfOutlined, FileTextOutlined, EyeOutlined, FileImageOutlined, FileWordOutlined, FileExcelOutlined, FilePptOutlined, FileUnknownOutlined } from '@ant-design/icons';
 
-import ContentLayout from '@components/ContentLayout';
 import FileUpload from '@components/FileUpload';
 import useContract from '@hooks/useContract';
+import useUser from '@hooks/useUser';
 import useCustomState from '@hooks/useCustomState';
 import { pinata } from '@services/pinata';
 import { getFileCategory } from '@utils/fileType';
+import { generateFileSHA256, verifyFileSHA256 } from '@utils/fileUtils';
+import { decryptSecretKey, encryptDataWithSecretKey, decryptDataWithSecretKey, signMessage, verifySignedMessage } from '@utils/encryptionUtils';
 
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
 
 const RecordList = ({ patientAddress }) => {
   const contract = useContract();
+  const user = useUser()
   const [state, updateState] = useCustomState({
     records: [],
     filteredRecords: [],
@@ -38,19 +41,27 @@ const RecordList = ({ patientAddress }) => {
           description: record[1],
           fileFormat: record[2],
           fileSize: record[3],
-          createdAt: record[4],
-          createdBy: record[5],
-          cid: record[6],
+          sha256: record[4],
+          createdAt: Number(record[5]),
+          createdBy: record[6],
+          updatedAt: Number(record[7]),
+          lastUpdatedBy: record[8],
+          cid: record[9],
+          sig: record[10],
         }))
       );
       const formattedRecords = recordsInfo.map((record, index) => ({
         key: index,
         title: record.filename,
         description: record.description,
-        date: new Date(Number(record.createdAt) * 1000).toLocaleDateString(),
-        uploadedBy: record.createdBy,
-        type: record.fileFormat,
         fileUrl: pinata.getIPFSUrl(record.cid),
+        date: new Date(Number(record.createdAt) * 1000).toLocaleDateString(),
+        type: record.fileFormat,
+        size: record.fileSize,
+        sha256: record.sha256,
+        uploadedBy: record.createdBy,
+        lastUpdatedBy: record.lastUpdatedBy,
+        sig: record.sig,
       }));
       updateState({ records: formattedRecords, isLoading: false });
     } catch (error) {
@@ -114,18 +125,60 @@ const RecordList = ({ patientAddress }) => {
     })
   };
 
+  const encryptFile = async (file) => {
+    const sha256 = await generateFileSHA256(file);
+    const privateKey = await contract.getPrivateKey();
+    let secretKey;
+    if (Number(user.role) === 2) {
+      const encryptedSecretKey = await contract.getEncryptedSecretKey(patientAddress);
+      secretKey = decryptSecretKey(encryptedSecretKey, privateKey);
+    } else if (Number(user.role) === 3) {
+      secretKey = await contract.getSecretKey();
+    }
+    if (!secretKey) {
+      updateState({ isUploading: false });
+      return new Error('Error getting secret key');
+    }
+    const signature = await signMessage(privateKey, sha256);
+    const fileBuffer = await file.arrayBuffer();
+    const encryptedFile = await encryptDataWithSecretKey(secretKey, fileBuffer);
+    return { sha256, signature, encryptedFile };
+  }
+
+  const decryptFile = async (record) => {
+    const response = await fetch(record.fileUrl);
+    const encryptedData = await response.text();
+    let secretKey;
+    if (Number(user.role) === 2) {
+      const encryptedSecretKey = await contract.getEncryptedSecretKey(patientAddress);
+      const doctorPrivateKey = await contract.getPrivateKey();
+      secretKey = decryptSecretKey(encryptedSecretKey, doctorPrivateKey);
+    } else if (Number(user.role) === 3) {
+      secretKey = await contract.getSecretKey();
+    }
+    if (!secretKey) {
+      return new Error('Error getting secret key');
+    }
+    const decryptedData = await decryptDataWithSecretKey(secretKey, encryptedData);
+    return decryptedData;
+  }
+
   const handleDescriptionSubmit = async () => {
     updateState({ isDescriptionModalVisible: false });
+    message.loading('Uploading file...');
     try {
       const file = state.fileList[0];
-      const hash = await pinata.uploadToIPFS(file);
+      const { sha256, signature, encryptedFile } = await encryptFile(file);
+      const hash = await pinata.uploadToIPFS(encryptedFile);
       const tx = await contract.addMedicalRecord(
         patientAddress,
         file.name,
         state.description,
         file.type,
-        String(file.size),
-        hash
+        file.size,
+        sha256,
+        hash,
+        signature
       );
       await tx.wait();
       message.success('File uploaded successfully');
@@ -138,8 +191,28 @@ const RecordList = ({ patientAddress }) => {
     }
   };
 
-  const handleShowContent = (record) => {
-    updateState({ selectedRecord: record, isSelectedRecordModalVisible : true });
+  const handleShowContent = async (record) => {
+    try {
+      const decryptedData = await decryptFile(record);
+      const binaryArray = Uint8Array.from(decryptedData, char => char.charCodeAt(0));
+      const blob = new Blob([binaryArray], { type: record.type });
+      const file = new File([blob], record.title, { type: record.type });
+      const publicKey = await contract.getPublicKey(record.lastUpdatedBy);
+      const isSignatureValid = await verifySignedMessage(publicKey, record.sha256, record.sig);
+      const isHashValid = await verifyFileSHA256(file, record.sha256);
+      if (!isSignatureValid || !isHashValid) {
+        message.error('File has been tampered');
+        return;
+      }
+      const fileUrl = URL.createObjectURL(blob);
+      updateState({ 
+        selectedRecord: { ...record, fileUrl }, 
+        isSelectedRecordModalVisible: true 
+      });
+    } catch (error) {
+      console.error(error);
+      message.error('Error fetching file');
+    }
   };
 
   const handleCloseModal = () => {

@@ -1,11 +1,15 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Input, Button, Col, Card, List, Typography, Avatar, Grid, Spin, Modal, message, Row } from 'antd';
 
 import ContentLayout from '@components/ContentLayout';
 import ProfileCard from '@components/ProfileCard';
+import KeyModal from '@components/KeyModal';
 import useContract from '@hooks/useContract';
+import useUser from '@hooks/useUser';
 import useCustomState from '@hooks/useCustomState';
 import { pinata } from '@services/pinata';
+import { encryptSecretKey, generateSecretKey, decryptDataWithSecretKey, encryptDataWithSecretKey, signMessage } from '@utils/encryptionUtils';
+import { generateFileSHA256 } from '@utils/fileUtils';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -13,6 +17,7 @@ const { useBreakpoint } = Grid;
 
 const Doctors = () => {
   const contract = useContract();
+  const user = useUser();
   const screens = useBreakpoint();
   const [state, updateState] = useCustomState({
     doctors: [],
@@ -22,23 +27,28 @@ const Doctors = () => {
     selectedDoctor: null,
     isLoading: true,
   });
+  const [loadingStates, setLoadingStates] = useState({});
 
   const fetchAllDoctors = useCallback(async () => {
     updateState({ isLoading: true });
     try {
       const doctors = await contract.getAllDoctors();
       const doctorInfos = await Promise.all(
-        doctors.map(async (doctor) => ({
-          address: doctor[0],
-          name: doctor[1],
-          age: Number(doctor[2]),
-          gender: doctor[3],
-          email: doctor[4],
-          contactNumber: doctor[5],
-          currentWorkingHospital: doctor[6],
-          specialization: doctor[7],
-          photoUrl: pinata.getIPFSUrl(doctor[8]),
-        }))
+        doctors.map(async (doctor) => {
+          const doctorPublicKey = await contract.getPublicKey(doctor[0]);
+          return {
+            address: doctor[0],
+            name: doctor[1],
+            age: Number(doctor[2]),
+            gender: doctor[3],
+            email: doctor[4],
+            contactNumber: doctor[5],
+            currentWorkingHospital: doctor[6],
+            specialization: doctor[7],
+            photoUrl: pinata.getIPFSUrl(doctor[8]),
+            publicKey: doctorPublicKey,
+          };
+        })
       );
       const doctorsWithAccess = await contract.listDoctorsWithAccess();
       updateState({
@@ -67,8 +77,11 @@ const Doctors = () => {
   };
 
   const handleGrantAccess = async (doctor) => {
+    setLoadingStates((prev) => ({ ...prev, [doctor.address]: true }));
     try {
-      const tx = await contract.grantAccessToDoctor(doctor.address);
+      const patientSecretKey = await contract.getSecretKey();
+      const encryptedSecretKey = encryptSecretKey(patientSecretKey, doctor.publicKey);
+      const tx = await contract.grantAccessToDoctor(doctor.address, encryptedSecretKey);
       await tx.wait();
       updateState({ doctorsWithAccess: [...state.doctorsWithAccess, doctor] });
       message.success('Access granted for ' + doctor.name);
@@ -76,11 +89,63 @@ const Doctors = () => {
       console.error(error);
       message.error('Error granting access to doctor ' + doctor.name);
     }
+    setLoadingStates((prev) => ({ ...prev, [doctor.address]: false }));
   };
 
   const handleRevokeAccess = async (doctor) => {
+    setLoadingStates((prev) => ({ ...prev, [doctor.address]: true }));
     try {
-      const tx = await contract.revokeAccessFromDoctor(doctor.address);
+      message.loading('Revoking access from ' + doctor.name);
+      const privateKey = await contract.getPrivateKey();
+      const oldSecretKey = await contract.getSecretKey();
+      const newSecretKey = generateSecretKey();
+      const medicalRecords = await contract.getMedicalRecords(user.address);
+      const recordsInfo = await Promise.all(
+        medicalRecords.map(async (record) => ({
+          title: record[0],
+          type: record[2],
+          sha256: record[4],
+          cid: record[9],
+          sig: record[10],
+        }))
+      );
+      const updatedRecordsSha256s = [];
+      const updatedRecordsCids = [];
+      const updatedRecordsSigs = [];
+      const remainingDoctors = state.doctorsWithAccess.filter((d) => d.address !== doctor.address).map((d) => d.address);
+      const encryptedKeysForRemainingDoctors = await Promise.all(
+        remainingDoctors.map((address) => {
+          const doctor = state.doctors.find((d) => d.address === address);
+          return encryptSecretKey(newSecretKey, doctor.publicKey);
+        })
+      )
+      for (const record of recordsInfo) {
+        const fileUrl = await pinata.getIPFSUrl(record.cid);
+        const response = await fetch(fileUrl);
+        const encryptedData = await response.text();
+        const decryptedData = await decryptDataWithSecretKey(oldSecretKey, encryptedData);
+        const binaryArray = Uint8Array.from(decryptedData, char => char.charCodeAt(0));
+        const blob = new Blob([binaryArray], { type: record.type });
+        const file = new File([blob], record.title, { type: record.type });
+        await pinata.unpin([record.cid]);
+        const sha256 = await generateFileSHA256(file);
+        const fileBuffer = await file.arrayBuffer();
+        const signature = await signMessage(privateKey, sha256);
+        const encryptedFile = await encryptDataWithSecretKey(newSecretKey, fileBuffer);
+        const hash = await pinata.uploadToIPFS(encryptedFile);
+        updatedRecordsSha256s.push(sha256);
+        updatedRecordsCids.push(hash);
+        updatedRecordsSigs.push(signature);
+      }
+      const tx = await contract.revokeAccessFromDoctor(
+        doctor.address,
+        newSecretKey,
+        remainingDoctors,
+        encryptedKeysForRemainingDoctors,
+        updatedRecordsSha256s,
+        updatedRecordsSigs,
+        updatedRecordsCids
+      );
       await tx.wait();
       updateState({
         doctorsWithAccess: state.doctorsWithAccess.filter((d) => d.address !== doctor.address),
@@ -90,6 +155,7 @@ const Doctors = () => {
       console.error(error);
       message.error('Error revoking access from doctor ' + doctor.name);
     }
+    setLoadingStates((prev) => ({ ...prev, [doctor.address]: false }));
   };
 
   const isDoctorGrantedAccess = (doctorAddress) =>
@@ -153,6 +219,7 @@ const Doctors = () => {
                             key='revoke'
                             size={screens.xs ? 'small' : 'middle'}
                             onClick={() => handleRevokeAccess(doctor)}
+                            loading={loadingStates[doctor.address]}
                           >
                             Revoke Access
                           </Button>
@@ -218,6 +285,7 @@ const Doctors = () => {
                             type='primary'
                             size={screens.xs ? 'small' : 'middle'}
                             onClick={() => handleGrantAccess(doctor)}
+                            loading={loadingStates[doctor.address]}
                           >
                             Grant Access
                           </Button>
@@ -246,13 +314,22 @@ const Doctors = () => {
           <ProfileCard
             title={state.selectedDoctor.name}
             items={[
-              { label: 'Name', children: state.selectedDoctor.name },
-              { label: 'Age', children: state.selectedDoctor.age },
-              { label: 'Gender', children: state.selectedDoctor.gender},
-              { label: 'Email', children: state.selectedDoctor.email },
-              { label: 'Contact Number', children: state.selectedDoctor.contactNumber },
-              { label: 'Current Working Hospital', children: state.selectedDoctor.currentWorkingHospital },
-              { label: 'Specialization', children: state.selectedDoctor.specialization },
+              { key: 1, label: 'Name', children: state.selectedDoctor.name },
+              { key: 2, label: 'Age', children: state.selectedDoctor.age },
+              { key: 3, label: 'Gender', children: state.selectedDoctor.gender},
+              { key: 4, label: 'Email', children: state.selectedDoctor.email },
+              { key: 5, label: 'Contact Number', children: state.selectedDoctor.contactNumber },
+              { key: 6, label: 'Current Working Hospital', children: state.selectedDoctor.currentWorkingHospital },
+              { key: 7, label: 'Specialization', children: state.selectedDoctor.specialization },
+              {
+                key: 8,
+                label: 'Public Key',
+                children: (
+                  <KeyModal
+                    publicKey={state.selectedDoctor.publicKey}
+                  />
+                )
+              }
             ]}
             avatarUrl={state.selectedDoctor.photoUrl}
           />

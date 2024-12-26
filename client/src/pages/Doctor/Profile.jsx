@@ -4,6 +4,7 @@ import { Col, Button, Form, Input, Modal, message, Spin } from 'antd';
 import ContentLayout from '@components/ContentLayout';
 import AvatarUpload from '@components/AvatarUpload';
 import ProfileCard from '@components/ProfileCard';
+import KeyModal from '@components/KeyModal';
 import useContract from '@hooks/useContract';
 import useUser from '@hooks/useUser';
 import useCustomState from '@hooks/useCustomState';
@@ -15,6 +16,7 @@ const Profile = () => {
   const [form] = Form.useForm();
   const [state, updateState] = useCustomState({
     isModalVisible: false,
+    isKeyModalVisible: false,
     doctorData: null,
     items: [],
     fileList: [],
@@ -26,6 +28,8 @@ const Profile = () => {
     updateState({ isLoading: true });
     try {
       const data = await contract.getDoctorInfo(user.address);
+      const doctorPublicKey = await contract.getPublicKey(user.address);
+      const doctorPrivateKey = await contract.getPrivateKey();
       const doctorData = {
         address: data[0],
         name: data[1],
@@ -36,6 +40,8 @@ const Profile = () => {
         currentWorkingHospital: data[6],
         specialization: data[7],
         hash: data[8],
+        publicKey: doctorPublicKey,
+        privateKey: doctorPrivateKey,
       };
       const avatarUrl = doctorData.hash ? await pinata.getIPFSUrl(doctorData.hash) : 'https://example.com/default-avatar.png';
       doctorData.avatarUrl = avatarUrl;
@@ -50,6 +56,16 @@ const Profile = () => {
           { key: 6, label: 'Contact Number', children: doctorData.contactNumber },
           { key: 7, label: 'Current Working Hospital', children: doctorData.currentWorkingHospital },
           { key: 8, label: 'Specialization', children: doctorData.specialization },
+          { 
+            key: 9,
+            label: 'Public and Private Keys',
+            children: (
+              <KeyModal
+                publicKey={doctorData.publicKey}
+                privateKey={doctorData.privateKey}
+              />
+            )
+          },
         ],
         isLoading: false,
       });

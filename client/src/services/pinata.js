@@ -10,7 +10,8 @@ const pinata = new PinataSDK({
 
 pinata.uploadToIPFS = async (file) => {
     try {
-        const result = await pinata.upload.file(file);
+        const fileObj = new File([file], 'encryptedFile', { type: 'application/octet-stream' });
+        const result = await pinata.upload.file(fileObj);
         return result.IpfsHash;
     } catch (error) {
         message.error('Error uploading to IPFS');
