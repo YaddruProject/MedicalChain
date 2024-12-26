@@ -1,8 +1,10 @@
 import time
+
 from MedicalChain.config import Config
 from MedicalChain.models import Analytics
 
 web3, contract = Config.setupWeb3()
+
 
 def calculate_throughput():
     try:
