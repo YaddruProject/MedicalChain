@@ -18,6 +18,8 @@ class Config:
 
     THROUGHPUT: List[Analytics] = []
     LATENCY: List[Analytics] = []
+    ENCRYPTION: List[Analytics] = []
+    DECRYPTION: List[Analytics] = []
 
     @classmethod
     def setupWeb3(cls) -> Tuple[Web3, Contract]:
