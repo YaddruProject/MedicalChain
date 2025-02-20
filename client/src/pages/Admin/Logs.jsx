@@ -65,7 +65,7 @@ const Logs = () => {
       key: "transactionHash",
       render: (text) => (
         <a
-          href={`https://explorer.buildbear.io/aggressive-hulk-0968b782/tx/${text}`}
+          href={`https://explorer.buildbear.io/immediate-husk-775100ec/tx/${text}`}
           target="_blank"
           rel="noopener noreferrer"
         >
