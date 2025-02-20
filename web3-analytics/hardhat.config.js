@@ -13,7 +13,8 @@ module.exports = {
   },
   networks: {
     buildbear: {
-      url: "https://rpc.buildbear.io/aggressive-hulk-0968b782"
+      // url: "https://rpc.buildbear.io/aggressive-hulk-0968b782"
+      url: "https://rpc.buildbear.io/immediate-husk-775100ec"
     }
   }
 };
