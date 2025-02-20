@@ -11,6 +11,7 @@ import { pinata } from '@services/pinata';
 import { getFileCategory } from '@utils/fileType';
 import { generateFileSHA256, verifyFileSHA256 } from '@utils/fileUtils';
 import { decryptSecretKey, encryptDataWithSecretKey, decryptDataWithSecretKey, signMessage, verifySignedMessage } from '@utils/encryptionUtils';
+import apiClient from '@services/api';
 
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
@@ -168,7 +169,11 @@ const RecordList = ({ patientAddress }) => {
     message.loading('Uploading file...');
     try {
       const file = state.fileList[0];
+      const startTime = Date.now();
       const { sha256, signature, encryptedFile } = await encryptFile(file);
+      const endTime = Date.now();
+      const encryptionTime = endTime - startTime;
+      await apiClient.post('/analytics/encryption?time=' + encryptionTime);
       const hash = await pinata.uploadToIPFS(encryptedFile);
       const tx = await contract.addMedicalRecord(
         patientAddress,
@@ -193,7 +198,11 @@ const RecordList = ({ patientAddress }) => {
 
   const handleShowContent = async (record) => {
     try {
+      const startTime = Date.now();
       const decryptedData = await decryptFile(record);
+      const endTime = Date.now();
+      const decryptionTime = endTime - startTime;
+      await apiClient.post('/analytics/decryption?time=' + decryptionTime);
       const binaryArray = Uint8Array.from(decryptedData, char => char.charCodeAt(0));
       const blob = new Blob([binaryArray], { type: record.type });
       const file = new File([blob], record.title, { type: record.type });
