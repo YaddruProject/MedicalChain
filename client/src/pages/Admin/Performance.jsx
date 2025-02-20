@@ -10,14 +10,18 @@ const Performance = () => {
   const [state, updateState] = useCustomState({
     throughputData: [],
     latencyData: [],
+    encryptionData: [],
+    decryptionData: [],
     isLoading: true,
   });
 
   const fetchAnalytics = useCallback(async () => {
     try {
-      const [throughputResponse, latencyResponse] = await Promise.all([
+      const [throughputResponse, latencyResponse, encryptionResponse, decryptionResponse] = await Promise.all([
         apiClient.get("/analytics/throughput"),
         apiClient.get("/analytics/latency"),
+        apiClient.get("/analytics/encryption"),
+        apiClient.get("/analytics/decryption"),
       ]);
       const throughputData = throughputResponse.data.map((item) => ({
         time: item.time,
@@ -27,7 +31,15 @@ const Performance = () => {
         time: item.time,
         value: item.value,
       }));
-      updateState({ throughputData, latencyData, isLoading: false });
+      const encryptionData = encryptionResponse.data.map((item) => ({
+        time: item.time,
+        value: item.value,
+      }));
+      const decryptionData = decryptionResponse.data.map((item) => ({
+        time: item.time,
+        value: item.value,
+      }));
+      updateState({ throughputData, latencyData, encryptionData, decryptionData, isLoading: false });
     } catch (error) {
       console.error("Error fetching analytics data:", error);
       message.error("Failed to load performance data");
@@ -63,6 +75,30 @@ const Performance = () => {
     },
   };
 
+  const encryptionConfig = {
+    data: state.encryptionData,
+    xField: "time",
+    yField: "value",
+    smooth: true,
+    height: 300,
+    point: {
+      sizeField: 5,
+      shapeField: "circle",
+    },
+  }
+
+  const decryptionConfig = {
+    data: state.decryptionData,
+    xField: "time",
+    yField: "value",
+    smooth: true,
+    height: 300,
+    point: {
+      sizeField: 5,
+      shapeField: "circle",
+    },
+  }
+
   return (
     <ContentLayout>
       <Col span={24}>
@@ -78,6 +114,16 @@ const Performance = () => {
             <Col span={24}>
               <Card title="Latency Over Time" bordered>
                 <Line {...latencyConfig} />
+              </Card>
+            </Col>
+            <Col span={24}>
+              <Card title="Encryption Time" bordered>
+                <Line {...encryptionConfig} />
+              </Card>
+            </Col>
+            <Col span={24}>
+              <Card title="Decryption Time" bordered>
+                <Line {...decryptionConfig} />
               </Card>
             </Col>
           </Row>
