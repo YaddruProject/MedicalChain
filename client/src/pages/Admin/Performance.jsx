@@ -61,6 +61,10 @@ const Performance = () => {
       sizeField: 5,
       shapeField: "circle",
     },
+    axis: {
+      x: {title: "Timestamp"},
+      y: {title: "Throughput (tps)"}
+    }
   };
 
   const latencyConfig = {
@@ -73,6 +77,10 @@ const Performance = () => {
       sizeField: 5,
       shapeField: "circle",
     },
+    axis: {
+      x: {title: "Timestamp"},
+      y: {title: "Latency (ms)"}
+    }
   };
 
   const encryptionConfig = {
@@ -85,8 +93,12 @@ const Performance = () => {
       sizeField: 5,
       shapeField: "circle",
     },
-  }
-
+    axis: {
+      x: {title: "Timestamp"},
+      y: {title: "Encryption Time (ms)"}
+    }
+  };
+  
   const decryptionConfig = {
     data: state.decryptionData,
     xField: "time",
@@ -97,7 +109,12 @@ const Performance = () => {
       sizeField: 5,
       shapeField: "circle",
     },
-  }
+    axis: {
+      x: {title: "Timestamp"},
+      y: {title: "Decryption Time (ms)"}
+    }
+  };
+  
 
   return (
     <ContentLayout>
