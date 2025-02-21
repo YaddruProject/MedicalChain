@@ -23,7 +23,9 @@ class Config:
 
     @classmethod
     def setupWeb3(cls) -> Tuple[Web3, Contract]:
-        web3 = Web3(Web3.HTTPProvider(cls.NETWORK_PROVIDER))
+        web3 = Web3(
+            Web3.HTTPProvider(cls.NETWORK_PROVIDER, request_kwargs={"timeout": 60}),
+        )
         if not web3.is_connected():
             raise Exception("Failed to connect to the Ethereum network")
         contract = web3.eth.contract(address=cls.CONTRACT_ADDRESS, abi=cls.CONTRACT_ABI)
