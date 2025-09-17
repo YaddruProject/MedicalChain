@@ -1,7 +1,9 @@
 apscheduler
+deepface
 fastapi
 noobstuffs
 pydantic
 python-dotenv
+python-multipart
 uvicorn
 web3
