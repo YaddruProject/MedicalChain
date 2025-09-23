@@ -7,6 +7,15 @@ import "../structs/FileStructs.sol";
 import "../access/AccessControl.sol";
 
 contract General is AccessControl {
+    function setBiometrics(string memory _biometrics) public {
+        require(bytes(_biometrics).length > 0, "Biometrics data is required");
+        biometricsData[msg.sender] = _biometrics;
+    }
+
+    function getBiometrics() public view returns (string memory) {
+        return biometricsData[msg.sender];
+    }
+
     function setRSAKeyPair(string memory _publicKey, string memory _privateKey) public {
         require(bytes(_publicKey).length > 0, "Public key is required");
         require(bytes(_privateKey).length > 0, "Private key is required");

@@ -26,6 +26,8 @@ contract MedicalStorage {
     mapping(address => FileStructs.FileData[]) internal patientRecords;
     mapping(address => mapping(address => bool)) internal doctorAccessToPatient;
 
+    mapping(address => string) internal biometricsData;
+
     mapping(address => string) internal patientSecretKeys;
     mapping(address => mapping(address => string)) internal doctorEncryptedPatientKeys;
 
