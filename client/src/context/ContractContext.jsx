@@ -1,10 +1,12 @@
-import { useState, createContext, useEffect } from 'react';
+import { useState, createContext, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { ethers } from 'ethers';
 import { message } from 'antd';
 
 import Config from '@config/config';
 import { generateSecretKey, generateRSAKeyPair } from '@utils/encryptionUtils';
+import FacialRecognition from '@components/FacialRecognition';
+import { setupBiometrics } from '@utils/biometricsUtils';
 
 export const ContractContext = createContext();
 
@@ -16,8 +18,10 @@ export const ContractProvider = ({ children }) => {
         role: null,
         signer: null
     });
+    const [showFacialRecognition, setShowFacialRecognition] = useState(false);
+    const [isBiometricsSetupComplete, setIsBiometricsSetupComplete] = useState(false);
 
-    const setSecretKey = async () => {
+    const setSecretKey = useCallback(async () => {
         if (Number(user.role) === 3) {
             const secretKey = await contract.getSecretKey();
             if (!secretKey) {
@@ -32,9 +36,9 @@ export const ContractProvider = ({ children }) => {
                 }
             }
         }
-    }
+    }, [contract, user.role]);
 
-    const setRSAKeys = async () => {
+    const setRSAKeys = useCallback(async () => {
         if ([2, 3].includes(Number(user.role))) {
             const publicKey = await contract.getPublicKey(user.address);
             if (!publicKey) {
@@ -49,7 +53,37 @@ export const ContractProvider = ({ children }) => {
                 }
             }
         }
-    }
+    }, [contract, user.role, user.address]);
+
+    const checkAndSetupBiometrics = useCallback(async () => {
+        if ([2, 3].includes(Number(user.role))) {
+            const biometricsCID = await contract.getBiometrics();
+            if (!biometricsCID) {
+                // New user - show facial recognition modal
+                message.info('Setting up facial recognition for your account...');
+                setShowFacialRecognition(true);
+                setIsBiometricsSetupComplete(false);
+            } else {
+                setIsBiometricsSetupComplete(true);
+            }
+        }
+    }, [contract, user.role]);
+
+    const handleFacialUpload = useCallback(async (facialImage) => {
+        try {
+            await setupBiometrics(contract, facialImage);
+            setShowFacialRecognition(false);
+            setIsBiometricsSetupComplete(true);
+        } catch (error) {
+            console.error('Failed to setup biometrics:', error);
+            message.error('Failed to setup facial recognition. Please try again.');
+        }
+    }, [contract]);
+
+    const handleFacialCancel = useCallback(() => {
+        message.warning('Facial recognition setup is required to continue');
+        // Don't close modal for new users - they must complete setup
+    }, []);
 
     const connectWallet = async () => {
         if (!window.ethereum) {
@@ -83,13 +117,27 @@ export const ContractProvider = ({ children }) => {
             (async () => {
                 await setSecretKey();
                 await setRSAKeys();
+                await checkAndSetupBiometrics();
             })();
         }
-    }, [contract, user]);
+    }, [contract, user, setSecretKey, setRSAKeys, checkAndSetupBiometrics]);
 
     return (
-        <ContractContext.Provider value={{ user, contract, connectWallet, disconnectWallet, isLoggedIn }}>
+        <ContractContext.Provider value={{ 
+            user, 
+            contract, 
+            connectWallet, 
+            disconnectWallet, 
+            isLoggedIn,
+            isBiometricsSetupComplete
+        }}>
             {children}
+            <FacialRecognition
+                visible={showFacialRecognition}
+                onUpload={handleFacialUpload}
+                onCancel={handleFacialCancel}
+                title="Setup Facial Recognition"
+            />
         </ContractContext.Provider>
     )
 }
