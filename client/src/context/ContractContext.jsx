@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { message } from 'antd';
 
 import Config from '@config/config';
-import { generateSecretKey, generateRSAKeyPair } from '@utils/encryptionUtils';
+import { generateSecretKey, generateECCKeyPair } from '@utils/encryptionUtils';
 import FacialRecognition from '@components/FacialRecognition';
 import { setupBiometrics } from '@utils/biometricsUtils';
 
@@ -38,17 +38,17 @@ export const ContractProvider = ({ children }) => {
         }
     }, [contract, user.role]);
 
-    const setRSAKeys = useCallback(async () => {
+    const setECCKeys = useCallback(async () => {
         if ([2, 3].includes(Number(user.role))) {
             const publicKey = await contract.getPublicKey(user.address);
             if (!publicKey) {
                 try {
-                    message.info('New user detected. Generating RSA keys...');
-                    const rsaKeys = await generateRSAKeyPair();
-                    await contract.setRSAKeyPair(rsaKeys.publicKey, rsaKeys.privateKey);
-                    message.success('RSA keys set successfully.');
+                    message.info('New user detected. Generating ECC keys...');
+                    const eccKeys = await generateECCKeyPair();
+                    await contract.setKeyPair(eccKeys.publicKey, eccKeys.privateKey);
+                    message.success('ECC keys set successfully.');
                 } catch (err) {
-                    alert('Failed to set RSA keys.');
+                    alert('Failed to set ECC keys.');
                     console.log(err);
                 }
             }
@@ -116,11 +116,11 @@ export const ContractProvider = ({ children }) => {
         if (contract && user.address && user.role) {
             (async () => {
                 await setSecretKey();
-                await setRSAKeys();
+                await setECCKeys();
                 await checkAndSetupBiometrics();
             })();
         }
-    }, [contract, user, setSecretKey, setRSAKeys, checkAndSetupBiometrics]);
+    }, [contract, user, setSecretKey, setECCKeys, checkAndSetupBiometrics]);
 
     return (
         <ContractContext.Provider value={{ 
