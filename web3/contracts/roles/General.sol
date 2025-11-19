@@ -16,7 +16,7 @@ contract General is AccessControl {
         return biometricsData[msg.sender];
     }
 
-    function setRSAKeyPair(string memory _publicKey, string memory _privateKey) public {
+    function setKeyPair(string memory _publicKey, string memory _privateKey) public {
         require(bytes(_publicKey).length > 0, "Public key is required");
         require(bytes(_privateKey).length > 0, "Private key is required");
         publicKeys[msg.sender] = _publicKey;
