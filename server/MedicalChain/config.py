@@ -16,6 +16,8 @@ class Config:
     CONTRACT_ABI: str = getConfig("CONTRACT_ABI", True)
     CONTRACT_ADDRESS: str = getConfig("CONTRACT_ADDRESS", True)
 
+    GROQ_API_KEY: str = getConfig("GROQ_API_KEY", True)
+
     THROUGHPUT: List[Analytics] = []
     LATENCY: List[Analytics] = []
     ENCRYPTION: List[Analytics] = []

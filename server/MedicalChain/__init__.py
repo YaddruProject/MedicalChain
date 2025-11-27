@@ -4,7 +4,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from MedicalChain.helpers.analytics import calculate_throughput, measure_latency
-from MedicalChain.routes import analytics_router, biometrics_router
+from MedicalChain.routes import (
+    analytics_router,
+    biometrics_router,
+    classification_router,
+)
 
 __version__ = "1.0.0"
 
@@ -42,3 +46,4 @@ async def root():
 
 app.include_router(analytics_router)
 app.include_router(biometrics_router)
+app.include_router(classification_router)

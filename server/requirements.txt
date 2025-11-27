@@ -1,6 +1,7 @@
 apscheduler
 deepface
 fastapi
+groq
 noobstuffs
 pydantic
 python-dotenv
