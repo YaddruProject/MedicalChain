@@ -23,6 +23,7 @@ library UserStructs {
         string currentWorkingHospital;
         string specialization;
         string profilePic;
+        uint16 specializationCode;
     }
 
     struct Patient {

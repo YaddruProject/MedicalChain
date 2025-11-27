@@ -15,5 +15,6 @@ library FileStructs {
         address lastUpdatedBy;
         string cid;
         string sig;
+        uint16 classificationCode;
     }
 }

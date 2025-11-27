@@ -57,7 +57,46 @@ contract General is AccessControl {
     }
 
     function getMedicalRecords(address _patientAddress) public view onlyPatientAndDoctor(_patientAddress) returns (FileStructs.FileData[] memory) {
-        return patientRecords[_patientAddress];
+        // If patient is calling, return all records
+        if (msg.sender == _patientAddress) {
+            return patientRecords[_patientAddress];
+        }
+        
+        // If doctor is calling, filter by hierarchical classification code
+        if (getRole(msg.sender) == Role.DOCTOR) {
+            uint16 doctorCode = doctors[msg.sender].specializationCode;
+            FileStructs.FileData[] memory allRecords = patientRecords[_patientAddress];
+            FileStructs.FileData[] memory filtered = new FileStructs.FileData[](allRecords.length);
+            uint count = 0;
+            
+            // If doctor has code 0 (All Specializations), grant access to all files
+            if (doctorCode == 0) {
+                return allRecords;
+            }
+            
+            for (uint i = 0; i < allRecords.length; i++) {
+                uint16 fileCode = allRecords[i].classificationCode;
+                
+                // If file has code 0 (All Specializations), all doctors can see it
+                // OR hierarchical access check
+                if (fileCode == 0 ||
+                    fileCode == doctorCode ||
+                    fileCode / 10 == doctorCode / 10 ||
+                    fileCode / 100 == doctorCode / 100 ||
+                    fileCode / 1000 == doctorCode / 1000) {
+                    filtered[count++] = allRecords[i];
+                }
+            }
+            
+            // Resize array to actual count
+            assembly {
+                mstore(filtered, count)
+            }
+            
+            return filtered;
+        }
+        
+        return new FileStructs.FileData[](0);
     }
 
     function addMedicalRecord(
@@ -68,7 +107,8 @@ contract General is AccessControl {
         uint256 _fileSize,
         string memory _sha256,
         string memory _cid,
-        string memory _sig
+        string memory _sig,
+        uint16 _classificationCode
     ) public onlyPatientAndDoctor(_patientAddress) {
         FileStructs.FileData memory newRecord = FileStructs.FileData({
             filename: _fileName,
@@ -81,7 +121,8 @@ contract General is AccessControl {
             updatedAt: block.timestamp,
             lastUpdatedBy: msg.sender,
             cid: _cid,
-            sig: _sig
+            sig: _sig,
+            classificationCode: _classificationCode
         });
         patientRecords[_patientAddress].push(newRecord);
         emit NewRecordAdded(_patientAddress, _cid);

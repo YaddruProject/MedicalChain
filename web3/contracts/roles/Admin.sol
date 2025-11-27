@@ -52,7 +52,8 @@ contract Admin is AccessControl {
         string memory _contactNumber,
         string memory _currentWorkingHospital,
         string memory _specialization,
-        string memory _profilePic
+        string memory _profilePic,
+        uint16 _specializationCode
     ) public onlyAdmin {
         grantRole(_doctorAddress, Role.DOCTOR);
         doctorsList.push(_doctorAddress);
@@ -65,7 +66,8 @@ contract Admin is AccessControl {
             contactNumber: _contactNumber,
             currentWorkingHospital: _currentWorkingHospital,
             specialization: _specialization,
-            profilePic: _profilePic
+            profilePic: _profilePic,
+            specializationCode: _specializationCode
         });
 
         emit DoctorRegistered(_doctorAddress, _name);
