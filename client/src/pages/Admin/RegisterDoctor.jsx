@@ -5,6 +5,8 @@ import AvatarUpload from '@components/AvatarUpload';
 import useContract from '@hooks/useContract';
 import useCustomState from '@hooks/useCustomState';
 import { pinata } from '@services/pinata';
+import apiClient from '@services/api';
+import { logClassification } from '@utils/debugLogger';
 
 const { Title } = Typography;
 
@@ -19,7 +21,27 @@ const RegisterDoctor = () => {
   const onFormFinish = async (values) => {
     updateState({ isSubmitting: true });
     try {
+      // Step 1: Get classification code from backend
+      const formData = new FormData();
+      formData.append('specialization', values.specialization);
+      
+      const classificationResponse = await apiClient.post('/classification/get-code', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      logClassification('/classification/get-code', 
+        { specialization: values.specialization }, 
+        classificationResponse.data
+      );
+      
+      const specializationCode = classificationResponse.data.code;
+      
+      // Step 2: Upload profile picture to IPFS
       const hash = await pinata.uploadToIPFS(state.fileList[0].originFileObj);
+      
+      // Step 3: Register doctor with classification code
       const tx = await contract.registerDoctor(
         values.walletAddress,
         values.name,
@@ -30,6 +52,7 @@ const RegisterDoctor = () => {
         values.currentWorkingHospital,
         values.specialization,
         hash,
+        specializationCode,
         { gasLimit: 1000000 }
       );
       await tx.wait();

@@ -12,6 +12,7 @@ import { getFileCategory } from '@utils/fileType';
 import { generateFileSHA256, verifyFileSHA256 } from '@utils/fileUtils';
 import { decryptSecretKey, encryptDataWithSecretKey, decryptDataWithSecretKey, signMessage, verifySignedMessage } from '@utils/encryptionUtils';
 import apiClient from '@services/api';
+import { logClassification } from '@utils/debugLogger';
 
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
@@ -169,12 +170,38 @@ const RecordList = ({ patientAddress }) => {
     message.loading('Uploading file...');
     try {
       const file = state.fileList[0];
+      
+      // Step 1: Classify file using backend API with FormData
+      const formData = new FormData();
+      formData.append('file', file.originFileObj || file);
+      formData.append('description', state.description);
+      
+      const classificationResponse = await apiClient.post('/classification/classify-file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      logClassification('/classification/classify-file', {
+        fileName: file.name, 
+        fileType: file.type,
+        fileSize: file.size,
+        description: state.description
+      }, classificationResponse.data);
+      
+      const classificationCode = classificationResponse.data.code;
+      
+      // Step 2: Encrypt file
       const startTime = Date.now();
       const { sha256, signature, encryptedFile } = await encryptFile(file);
       const endTime = Date.now();
       const encryptionTime = endTime - startTime;
       await apiClient.post('/analytics/encryption?time=' + encryptionTime);
+      
+      // Step 3: Upload to IPFS
       const hash = await pinata.uploadToIPFS(encryptedFile);
+      
+      // Step 4: Add medical record with classification code
       const tx = await contract.addMedicalRecord(
         patientAddress,
         file.name,
@@ -183,7 +210,8 @@ const RecordList = ({ patientAddress }) => {
         file.size,
         sha256,
         hash,
-        signature
+        signature,
+        classificationCode
       );
       await tx.wait();
       message.success('File uploaded successfully');
