@@ -4,6 +4,8 @@ fastapi
 groq
 noobstuffs
 pydantic
+PyPDF2
+python-docx
 python-dotenv
 python-multipart
 uvicorn

@@ -1,9 +1,12 @@
 import base64
+import io
 import json
 
+from docx import Document
 from groq import Groq
 from MedicalChain.config import Config
 from MedicalChain.helpers.hierarchy import hierarchy_helper
+from PyPDF2 import PdfReader
 
 client = Groq(api_key=Config.GROQ_API_KEY)
 
@@ -322,13 +325,36 @@ Return ONLY this JSON format (no other text):
         model = "meta-llama/llama-4-scout-17b-16e-instruct"  # Vision-capable model
 
     else:
-        # For text, PDFs, documents - extract text content
+        # For text, PDFs, documents - extract complete text content
+        content_preview = ""
         if file_content:
             try:
-                # Try to decode as text
-                content_preview = file_content.decode("utf-8", errors="ignore")[:2000]
-            except:
-                content_preview = "Binary file - content not readable as text"
+                # Extract text based on file type
+                if filename.lower().endswith(".pdf"):
+                    # Extract all text from PDF
+                    pdf_reader = PdfReader(io.BytesIO(file_content))
+                    all_text = []
+                    for page in pdf_reader.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            all_text.append(page_text)
+                    content_preview = "\n\n".join(all_text)
+
+                elif filename.lower().endswith((".doc", ".docx")):
+                    # Extract all text from Word document
+                    doc = Document(io.BytesIO(file_content))
+                    all_paragraphs = [
+                        para.text for para in doc.paragraphs if para.text.strip()
+                    ]
+                    content_preview = "\n".join(all_paragraphs)
+
+                else:
+                    # Try to decode as plain text
+                    content_preview = file_content.decode("utf-8", errors="ignore")
+
+            except Exception as e:
+                print(f"Text extraction failed: {e}")
+                content_preview = "Content extraction failed - analyzing filename and description only"
 
         prompt = f"""You are a medical records classification expert. Classify this medical file.
 
