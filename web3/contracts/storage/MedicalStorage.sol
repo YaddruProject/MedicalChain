@@ -7,11 +7,18 @@ import "../structs/FileStructs.sol";
 
 contract MedicalStorage {
     enum Role { NONE, ADMIN, DOCTOR, PATIENT }
+    enum AccessType { LIMITED, COMPLETE }
 
     struct RoleDetails {
         Role role;
         address assignedBy;
         uint256 assignedAt;
+    }
+
+    struct DoctorAccess {
+        bool hasAccess;
+        AccessType accessType;
+        uint16[] relatedCodes;
     }
 
     mapping(address => RoleDetails) internal userRoles;
@@ -24,7 +31,7 @@ contract MedicalStorage {
     mapping(address => UserStructs.Doctor) internal doctors;
     mapping(address => UserStructs.Patient) internal patients;
     mapping(address => FileStructs.FileData[]) internal patientRecords;
-    mapping(address => mapping(address => bool)) internal doctorAccessToPatient;
+    mapping(address => mapping(address => DoctorAccess)) internal doctorAccessToPatient;
 
     mapping(address => string) internal biometricsData;
 

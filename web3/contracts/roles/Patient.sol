@@ -16,7 +16,7 @@ contract Patient is AccessControl {
     ) internal onlyPatient {
         require(_remainingDoctors.length == _encryptedKeysForRemainingDoctors.length, "Mismatch between the number of doctors and encrypted keys");
         for (uint i = 0; i < _remainingDoctors.length; i++) {
-            require(doctorAccessToPatient[_remainingDoctors[i]][msg.sender], "Doctor does not have access");
+            require(doctorAccessToPatient[_remainingDoctors[i]][msg.sender].hasAccess, "Doctor does not have access");
             doctorEncryptedPatientKeys[_remainingDoctors[i]][msg.sender] = _encryptedKeysForRemainingDoctors[i];
         }
     }
@@ -65,10 +65,19 @@ contract Patient is AccessControl {
         return result;
     }
 
-    function grantAccessToDoctor(address _doctorAddress, string memory _encryptedKey) public onlyPatient {
+    function grantAccessToDoctor(
+        address _doctorAddress, 
+        string memory _encryptedKey,
+        AccessType _accessType,
+        uint16[] memory _relatedCodes
+    ) public onlyPatient {
         require(getRole(_doctorAddress) == Role.DOCTOR, "Doctor is not registered");
-        require(!doctorAccessToPatient[_doctorAddress][msg.sender], "Doctor already have access");
-        doctorAccessToPatient[_doctorAddress][msg.sender] = true;
+        require(!doctorAccessToPatient[_doctorAddress][msg.sender].hasAccess, "Doctor already has access");
+        doctorAccessToPatient[_doctorAddress][msg.sender] = DoctorAccess({
+            hasAccess: true,
+            accessType: _accessType,
+            relatedCodes: _relatedCodes
+        });
         doctorEncryptedPatientKeys[_doctorAddress][msg.sender] = _encryptedKey;
         emit AccessGranted(msg.sender, _doctorAddress);
     }
@@ -83,8 +92,8 @@ contract Patient is AccessControl {
         string[] memory _cids
     ) public onlyPatient {
         require(getRole(_doctorAddress) == Role.DOCTOR, "Doctor is not registered");
-        require(doctorAccessToPatient[_doctorAddress][msg.sender], "Doctor does not have access");
-        doctorAccessToPatient[_doctorAddress][msg.sender] = false;
+        require(doctorAccessToPatient[_doctorAddress][msg.sender].hasAccess, "Doctor does not have access");
+        delete doctorAccessToPatient[_doctorAddress][msg.sender];
         delete doctorEncryptedPatientKeys[_doctorAddress][msg.sender];
         updatePatientSecretKey(_newSecretKey);
         updateEncryptedKeysForRemainingDoctors(_remainingDoctors, _encryptedKeysForRemainingDoctors);

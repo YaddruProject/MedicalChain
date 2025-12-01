@@ -61,41 +61,62 @@ contract General is AccessControl {
         if (msg.sender == _patientAddress) {
             return patientRecords[_patientAddress];
         }
-        
-        // If doctor is calling, filter by hierarchical classification code
+        // If doctor is calling, check access type and filter accordingly
         if (getRole(msg.sender) == Role.DOCTOR) {
-            uint16 doctorCode = doctors[msg.sender].specializationCode;
+            DoctorAccess memory access = doctorAccessToPatient[msg.sender][_patientAddress];
+            // Check if doctor has access
+            if (!access.hasAccess) {
+                return new FileStructs.FileData[](0);
+            }
             FileStructs.FileData[] memory allRecords = patientRecords[_patientAddress];
-            FileStructs.FileData[] memory filtered = new FileStructs.FileData[](allRecords.length);
-            uint count = 0;
-            
-            // If doctor has code 0 (All Specializations), grant access to all files
-            if (doctorCode == 0) {
+            // COMPLETE access - return all files
+            if (access.accessType == AccessType.COMPLETE) {
                 return allRecords;
             }
-            
+            // LIMITED access - filter by related codes and doctor's own specialization
+            FileStructs.FileData[] memory filtered = new FileStructs.FileData[](allRecords.length);
+            uint count = 0;
+            uint16 doctorCode = doctors[msg.sender].specializationCode;
             for (uint i = 0; i < allRecords.length; i++) {
                 uint16 fileCode = allRecords[i].classificationCode;
-                
-                // If file has code 0 (All Specializations), all doctors can see it
-                // OR hierarchical access check
-                if (fileCode == 0 ||
-                    fileCode == doctorCode ||
-                    fileCode / 10 == doctorCode / 10 ||
-                    fileCode / 100 == doctorCode / 100 ||
-                    fileCode / 1000 == doctorCode / 1000) {
+                bool hasAccess = false;
+                // If file has code 0, all doctors can see it
+                if (fileCode == 0) {
+                    hasAccess = true;
+                } else {
+                    // First check if file matches doctor's own specialization code
+                    if (doctorCode == 0 ||
+                        fileCode == doctorCode ||
+                        fileCode / 10 == doctorCode / 10 ||
+                        fileCode / 100 == doctorCode / 100 ||
+                        fileCode / 1000 == doctorCode / 1000) {
+                        hasAccess = true;
+                    } else {
+                        // Then check if file code matches any of doctor's related codes
+                        for (uint j = 0; j < access.relatedCodes.length; j++) {
+                            uint16 allowedCode = access.relatedCodes[j];   
+                            // Check hierarchical access
+                            if (allowedCode == 0 ||
+                                fileCode == allowedCode ||
+                                fileCode / 10 == allowedCode / 10 ||
+                                fileCode / 100 == allowedCode / 100 ||
+                                fileCode / 1000 == allowedCode / 1000) {
+                                hasAccess = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (hasAccess) {
                     filtered[count++] = allRecords[i];
                 }
             }
-            
             // Resize array to actual count
             assembly {
                 mstore(filtered, count)
             }
-            
             return filtered;
         }
-        
         return new FileStructs.FileData[](0);
     }
 

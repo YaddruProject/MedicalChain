@@ -79,10 +79,10 @@ contract AccessControl is MedicalStorage {
     }
 
     function hasPatientAccess(address _patientAddress) internal view onlyDoctor returns (bool) {
-        return doctorAccessToPatient[msg.sender][_patientAddress];
+        return doctorAccessToPatient[msg.sender][_patientAddress].hasAccess;
     }
 
     function doctorHasAccess(address _doctorAddress) internal view onlyPatient returns (bool) {
-        return doctorAccessToPatient[_doctorAddress][msg.sender];
+        return doctorAccessToPatient[_doctorAddress][msg.sender].hasAccess;
     }
 }
