@@ -233,6 +233,113 @@ Return ONLY this JSON format (no other text):
             }
 
 
+def determine_related_access_codes(specialization_code: int) -> list:
+    """
+    Use LLM to determine which related codes a doctor needs access to based on their specialization
+
+    Args:
+        specialization_code: Doctor's primary specialization code
+
+    Returns:
+        list of codes the doctor should have access to
+    """
+    spec_name = hierarchy_helper.get_name_by_code(specialization_code)
+    if spec_name == "Unknown":
+        return [specialization_code]
+
+    all_specs = hierarchy_helper.get_all_specializations()
+    spec_list = "\n".join([f"{s['code']}: {s['name']}" for s in all_specs])
+
+    prompt = f"""You are a medical access control expert determining which DIAGNOSTIC and SUPPORT service codes a doctor needs.
+
+Doctor's specialization: {spec_name} (Code: {specialization_code})
+
+Available codes:
+{spec_list}
+
+CRITICAL DECISION FRAMEWORK:
+
+Does this specialty ORDER or INTERPRET diagnostic tests as part of their PRIMARY clinical workflow?
+
+If NO (e.g., Psychiatry, Counseling, Palliative Care) → Return ONLY the primary code [{specialization_code}]
+If YES → Include relevant diagnostic codes from category 6xxx
+
+DIAGNOSTIC CODES (6xxx):
+- 6100: Radiology (X-ray, CT, MRI)
+- 6200: Pathology (tissue/biopsy analysis)
+- 6300: Lab Medicine (blood tests, cultures)
+
+STRICT RULES:
+1. ALWAYS include primary code ({specialization_code})
+2. ONLY add codes from 6xxx category if the doctor orders/reviews those tests regularly
+3. Psychiatrists DO NOT need any 6xxx codes - they work through clinical interviews, not lab/imaging
+4. DO NOT add other clinical specialty codes (1xxx-5xxx, 7xxx-9xxx)
+5. Return codes that EXIST in the list above
+6. Return ONLY valid JSON with no additional text
+
+Return ONLY this JSON format:
+{{
+  "codes": [4200],
+  "reasoning": "brief explanation"
+}}
+"""
+
+    try:
+        completion = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a medical access control expert. Return ONLY valid JSON with no additional text or explanations outside the JSON object.",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=0.1,
+            max_completion_tokens=500,
+        )
+
+        response_content = completion.choices[0].message.content.strip()
+
+        # Remove markdown code blocks if present
+        if response_content.startswith("```"):
+            response_content = (
+                response_content.replace("```json", "").replace("```", "").strip()
+            )
+
+        # Try to extract JSON from response if LLM added extra text
+        import re
+
+        json_match = re.search(r"\{[^}]+\}", response_content, re.DOTALL)
+        if json_match:
+            response_content = json_match.group(0)
+
+        result = json.loads(response_content)
+        codes = result.get("codes", [])
+
+        # Validate all codes exist
+        valid_codes = [
+            c for c in codes if c in hierarchy_helper.get_all_codes() or c == 0
+        ]
+
+        # Ensure primary code is included
+        if specialization_code not in valid_codes and specialization_code != 0:
+            valid_codes.append(specialization_code)
+
+        print(
+            f"Related access codes for {spec_name} ({specialization_code}): {valid_codes}",
+        )
+
+        return valid_codes
+
+    except Exception as e:
+        print(f"LLM access determination failed: {str(e)}, returning primary code only")
+        # Fallback: just return primary code
+        return [specialization_code]
+
+
 async def classify_medical_file(
     file,
     description: str,

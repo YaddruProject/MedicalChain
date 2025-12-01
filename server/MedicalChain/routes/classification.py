@@ -2,6 +2,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from MedicalChain.helpers.classifier import (
     classify_medical_file,
     classify_specialization,
+    determine_related_access_codes,
 )
 from MedicalChain.helpers.hierarchy import hierarchy_helper
 from MedicalChain.models import (
@@ -60,3 +61,23 @@ async def get_code_details(code: int):
         "category": code // 1000,
         "specialty": (code // 100) % 100,
     }
+
+
+@router.post("/determine-access")
+async def determine_access(
+    specializationCode: int = Form(...),
+):
+    """
+    LLM determines what related codes a doctor needs access to based on their specialization
+    """
+    try:
+        codes = determine_related_access_codes(specializationCode)
+        return {
+            "codes": codes,
+            "primary_code": specializationCode,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not determine access codes: {str(e)}",
+        )
