@@ -8,5 +8,6 @@ PyPDF2
 python-docx
 python-dotenv
 python-multipart
+tf-keras
 uvicorn
 web3
