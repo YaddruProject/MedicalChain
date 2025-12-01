@@ -68,9 +68,20 @@ if ! kill -0 $HARDHAT_PID 2>/dev/null; then
 fi
 echo -e "${GREEN}✓ Hardhat node running (PID: $HARDHAT_PID)${NC}\n"
 
-# Step 2: Deploy MedicalChain Contract
-echo -e "${BLUE}[2/5] Deploying MedicalChain contract...${NC}"
+# Step 2: Compile and Deploy MedicalChain Contract
+echo -e "${BLUE}[2/6] Compiling MedicalChain contract...${NC}"
 cd web3
+npx hardhat compile > ../compile.log 2>&1
+COMPILE_STATUS=$?
+
+if [ $COMPILE_STATUS -ne 0 ]; then
+    echo -e "${RED}Failed to compile MedicalChain contract!${NC}"
+    cat ../compile.log
+    exit 1
+fi
+echo -e "${GREEN}✓ MedicalChain contract compiled successfully${NC}\n"
+
+echo -e "${BLUE}[3/7] Deploying MedicalChain contract...${NC}"
 DEPLOY_OUTPUT=$(npx hardhat ignition deploy ./ignition/modules/MedicalChain.js --network localhost 2>&1)
 DEPLOY_STATUS=$?
 
@@ -89,12 +100,32 @@ if [ -z "$MEDICAL_CHAIN_ADDRESS" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}✓ MedicalChain deployed at: $MEDICAL_CHAIN_ADDRESS${NC}\n"
+echo -e "${GREEN}✓ MedicalChain deployed at: $MEDICAL_CHAIN_ADDRESS${NC}"
+
+# Extract and prepare ABI for client
+echo -e "${BLUE}Extracting MedicalChain ABI...${NC}"
+MEDICAL_CHAIN_ABI=$(cat artifacts/contracts/MedicalChain.sol/MedicalChain.json | jq -c '.abi')
+if [ -z "$MEDICAL_CHAIN_ABI" ]; then
+    echo -e "${RED}Could not extract MedicalChain ABI!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ MedicalChain ABI extracted${NC}\n"
 cd ..
 
-# Step 3: Deploy Analytics Contract
-echo -e "${BLUE}[3/5] Deploying Analytics contract...${NC}"
+# Step 4: Compile and Deploy Analytics Contract
+echo -e "${BLUE}[4/7] Compiling Analytics contract...${NC}"
 cd web3-analytics
+npx hardhat compile > ../compile-analytics.log 2>&1
+COMPILE_ANALYTICS_STATUS=$?
+
+if [ $COMPILE_ANALYTICS_STATUS -ne 0 ]; then
+    echo -e "${RED}Failed to compile Analytics contract!${NC}"
+    cat ../compile-analytics.log
+    exit 1
+fi
+echo -e "${GREEN}✓ Analytics contract compiled successfully${NC}\n"
+
+echo -e "${BLUE}[5/7] Deploying Analytics contract...${NC}"
 ANALYTICS_OUTPUT=$(npx hardhat ignition deploy ./ignition/modules/Analytics.js --network localhost 2>&1)
 ANALYTICS_STATUS=$?
 
@@ -113,16 +144,28 @@ if [ -z "$ANALYTICS_ADDRESS" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}✓ Analytics deployed at: $ANALYTICS_ADDRESS${NC}\n"
+echo -e "${GREEN}✓ Analytics deployed at: $ANALYTICS_ADDRESS${NC}"
+
+# Extract and prepare Analytics ABI
+echo -e "${BLUE}Extracting Analytics ABI...${NC}"
+ANALYTICS_ABI=$(cat artifacts/contracts/Analytics.sol/Analytics.json | jq -c '.abi')
+if [ -z "$ANALYTICS_ABI" ]; then
+    echo -e "${RED}Could not extract Analytics ABI!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Analytics ABI extracted${NC}\n"
 cd ..
 
-# Update server config.env with Analytics contract address
+# Update server config.env with Analytics contract address and ABI
 echo -e "${BLUE}Updating server configuration...${NC}"
 sed -i.bak "s|^CONTRACT_ADDRESS.*|CONTRACT_ADDRESS = \"$ANALYTICS_ADDRESS\"|g" server/config.env
-echo -e "${GREEN}✓ Server config updated${NC}\n"
+# Escape special characters in the ABI for sed
+ESCAPED_ANALYTICS_ABI=$(echo "$ANALYTICS_ABI" | sed 's/[&/\]/\\&/g')
+sed -i.bak "s|^CONTRACT_ABI.*|CONTRACT_ABI = '$ESCAPED_ANALYTICS_ABI'|g" server/config.env
+echo -e "${GREEN}✓ Server config updated with Analytics address and ABI${NC}\n"
 
-# Step 4: Start Python Server
-echo -e "${BLUE}[4/5] Starting Python server...${NC}"
+# Step 6: Start Python Server
+echo -e "${BLUE}[6/7] Starting Python server...${NC}"
 cd server
 python3 main.py > ../server.log 2>&1 &
 PYTHON_PID=$!
@@ -139,8 +182,8 @@ if ! kill -0 $PYTHON_PID 2>/dev/null; then
 fi
 echo -e "${GREEN}✓ Python server running (PID: $PYTHON_PID)${NC}\n"
 
-# Step 5: Start Client
-echo -e "${BLUE}[5/5] Starting React client...${NC}"
+# Step 7: Start Client
+echo -e "${BLUE}[7/7] Starting React client...${NC}"
 cd client
 
 # Check if .env exists, if not create from sample.env
@@ -156,6 +199,16 @@ if grep -q "^VITE_CONTRACT_ADDRESS=" .env; then
 else
     echo "VITE_CONTRACT_ADDRESS=$MEDICAL_CHAIN_ADDRESS" >> .env
 fi
+
+# Update client .env with MedicalChain contract ABI
+if grep -q "^VITE_CONTRACT_ABI=" .env; then
+    # Escape special characters in the ABI for sed
+    ESCAPED_ABI=$(echo "$MEDICAL_CHAIN_ABI" | sed 's/[&/\]/\\&/g')
+    sed -i.bak "s|^VITE_CONTRACT_ABI=.*|VITE_CONTRACT_ABI=$ESCAPED_ABI|g" .env
+else
+    echo "VITE_CONTRACT_ABI=$MEDICAL_CHAIN_ABI" >> .env
+fi
+echo -e "${GREEN}✓ Client configuration updated with contract address and ABI${NC}\n"
 
 npm run dev > ../client.log 2>&1 &
 CLIENT_PID=$!
