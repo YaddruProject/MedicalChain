@@ -4,12 +4,15 @@ import { Input, Button, Col, Card, List, Typography, Avatar, Grid, Spin, Modal, 
 import ContentLayout from '@components/ContentLayout';
 import ProfileCard from '@components/ProfileCard';
 import KeyModal from '@components/KeyModal';
+import AccessModal from '@components/AccessModal';
 import useContract from '@hooks/useContract';
 import useUser from '@hooks/useUser';
 import useCustomState from '@hooks/useCustomState';
 import { pinata } from '@services/pinata';
 import { encryptSecretKey, generateSecretKey, decryptDataWithSecretKey, encryptDataWithSecretKey, signMessage } from '@utils/encryptionUtils';
 import { generateFileSHA256 } from '@utils/fileUtils';
+import { logClassification } from '@utils/debugLogger';
+import apiClient from '@services/api';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -26,6 +29,8 @@ const Doctors = () => {
     isModalVisible: false,
     selectedDoctor: null,
     isLoading: true,
+    accessModalVisible: false,
+    doctorToGrant: null,
   });
   const [loadingStates, setLoadingStates] = useState({});
 
@@ -46,6 +51,7 @@ const Doctors = () => {
             currentWorkingHospital: doctor[6],
             specialization: doctor[7],
             photoUrl: pinata.getIPFSUrl(doctor[8]),
+            specializationCode: Number(doctor[9]),
             publicKey: doctorPublicKey,
           };
         })
@@ -77,19 +83,61 @@ const Doctors = () => {
   };
 
   const handleGrantAccess = async (doctor) => {
+    updateState({ doctorToGrant: doctor, accessModalVisible: true });
+  };
+
+  const handleAccessGrant = async (accessType) => {
+    const doctor = state.doctorToGrant;
     setLoadingStates((prev) => ({ ...prev, [doctor.address]: true }));
+    
     try {
       const patientSecretKey = await contract.getSecretKey();
       const encryptedSecretKey = encryptSecretKey(patientSecretKey, doctor.publicKey);
-      const tx = await contract.grantAccessToDoctor(doctor.address, encryptedSecretKey);
+      
+      let accessTypeValue = accessType === 'limited' ? 0 : 1; // 0 = LIMITED, 1 = COMPLETE
+      let relatedCodes = [];
+      
+      if (accessType === 'limited') {
+        const formData = new FormData();
+        formData.append('specializationCode', doctor.specializationCode || 0);
+        
+        const response = await apiClient.post('/classification/determine-access', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        relatedCodes = response.data.codes;
+        logClassification(
+          '/classification/determine-access',
+          {
+            specialization: doctor.specialization,
+            specializationCode: doctor.specializationCode,
+            accessType: accessType.toUpperCase()
+          },
+          response.data
+        );
+      }
+      
+      const tx = await contract.grantAccessToDoctor(
+        doctor.address, 
+        encryptedSecretKey,
+        accessTypeValue,
+        relatedCodes
+      );
       await tx.wait();
-      updateState({ doctorsWithAccess: [...state.doctorsWithAccess, doctor] });
-      message.success('Access granted for ' + doctor.name);
+      
+      updateState({ 
+        doctorsWithAccess: [...state.doctorsWithAccess, doctor],
+        accessModalVisible: false,
+        doctorToGrant: null
+      });
+      
+      message.success(`${accessType === 'limited' ? 'Limited' : 'Complete'} access granted to ${doctor.name}`);
     } catch (error) {
       console.error(error);
       message.error('Error granting access to doctor ' + doctor.name);
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [doctor.address]: false }));
     }
-    setLoadingStates((prev) => ({ ...prev, [doctor.address]: false }));
   };
 
   const handleRevokeAccess = async (doctor) => {
@@ -335,6 +383,13 @@ const Doctors = () => {
           />
         )}
       </Modal>
+
+      <AccessModal
+        visible={state.accessModalVisible}
+        doctor={state.doctorToGrant}
+        onGrant={handleAccessGrant}
+        onCancel={() => updateState({ accessModalVisible: false })}
+      />
     </ContentLayout>
   );  
 };
