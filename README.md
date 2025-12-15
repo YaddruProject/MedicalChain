@@ -6,14 +6,23 @@
 
 This project presents a blockchain-based decentralized application (dApp) designed to securely manage and share Electronic Health Records (EHR). It uses Smart Contracts to manage and automate the sharing of EHR data between patients, doctors, and healthcare providers. All medical records are stored using the Inter Planetary File System (IPFS), ensuring secure and efficient access. The system ensures that only authorized entities can access patient data, and all actions are recorded immutably on the blockchain.
 
+### Key Features
+
+- **ECC Encryption**: Elliptic Curve Cryptography (ECC) for secure and efficient data encryption
+- **Biometric Authentication**: Facial recognition-based identity verification for enhanced security
+- **Hierarchical Access Control**: Role-based access system with doctor specialization-based permissions
+- **IPFS Storage**: Decentralized storage of medical records for tamper-proof data management
+- **Smart Contract Automation**: Automated permission management and audit logging on blockchain
+
 ## Project Structure
 
 ```text
 .
 ├── client             # Frontend interface
-├── server             # Python backend for analytics logging
+├── server             # Python backend for analytics, biometrics, and classification
 ├── web3               # Core smart contract
-└── web3-analytics     # Smart contract for analytics logging
+├── web3-analytics     # Smart contract for analytics logging
+└── start-local.sh     # Automated local deployment script
 ```
 
 ## Prerequisites
@@ -26,6 +35,32 @@ Ensure the following are installed on your system:
 - [Pinata API Key](https://app.pinata.cloud/developers/api-keys)
 
 ## Getting Started
+
+### Quick Start (Automated Setup)
+
+For a fully automated local deployment, you can use the provided script:
+
+```bash
+# Make the script executable (first time only)
+chmod +x start-local.sh
+
+# Run the automated setup
+./start-local.sh
+```
+
+This script will automatically:
+
+- Start the Hardhat local blockchain node
+- Compile and deploy both smart contracts
+- Configure environment variables
+- Start the Python backend server
+- Launch the frontend client
+
+**Note**: You still need to complete the **Prerequisites** and **MetaMask setup** (steps 4-6) manually before running the script.
+
+### Manual Setup
+
+For manual setup or if you prefer step-by-step control, follow the instructions below:
 
 ### 1. Clone the Repository
 

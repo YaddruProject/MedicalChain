@@ -1,6 +1,10 @@
-# Analytics Server - Medical Blockchain
+# Backend Server - Medical Blockchain
 
-This directory contains a simple Python backend server responsible for simulating transactions in the Analytics smart contract to compute blockchain performance metrics such as throughput, latency.
+This directory contains the Python backend server for the Medical Blockchain project. The server provides multiple critical functionalities:
+
+- **Analytics**: Computing blockchain performance metrics (throughput, latency) via smart contract interactions
+- **Biometrics Verification**: Facial recognition-based authentication using machine learning models
+- **Classification**: AI-powered doctor specialization classification with hierarchical access code assignment
 
 ## Setup Instructions
 
@@ -27,6 +31,7 @@ Open `config.env` and fill in the following:
 - `CONTRACT_ABI` - ABI of the deployed Analytics contract.  
   Before adding it here, convert the ABI to a **single-line JSON string** using [this tool](https://www.text-utils.com/json-formatter/).
 - `CONTRACT_ADDRESS` - Address of the deployed Analytics contract
+- `GROQ_API_KEY` - Groq API key for AI-powered classification features (required for doctor specialization classification)
 
 ### 4. Run the Server
 
@@ -40,4 +45,8 @@ python main.py
 
 Once the server is running, it will be accessible at a local URL (e.g., `http://127.0.0.1:5000` by default).  
 
-Make sure to save this URL — it will be required in the frontend (`client`) to send access log requests.
+Make sure to save this URL — it will be required in the frontend (`client`) for:
+
+- Analytics logging
+- Biometric verification
+- Doctor specialization classification
